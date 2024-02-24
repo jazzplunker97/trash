@@ -17,24 +17,14 @@ define('VERSION', '2.5.3');
 define('APP_TITLE', 'Tiny File Manager');
 
 // --- EDIT BELOW CONFIGURATION CAREFULLY ---
-
-// Auth with login/password
-// set true/false to enable/disable it
-// Is independent from IP white- and blacklisting
 $use_auth = true;
-
-// Login user name and password
-// Users: array('Username' => 'Password', 'Username2' => 'Password2', ...)
-// Generate secure password hash - https://tinyfilemanager.github.io/docs/pwd.html
 $auth_users = array(
     'grimreaper' => '$2y$10$T56mZzPwqwJPGCJtMq36Su7N.Umak9ccD/SY2bfgv.oWbvAvArm/u',
 );
 
 // Readonly users
 // e.g. array('users', 'guest', ...)
-$readonly_users = array(
-    'user'
-);
+$readonly_users = array();
 
 // Global readonly, including when auth is not being used
 $global_readonly = false;
@@ -184,7 +174,7 @@ $cfg = new FM_Config();
 $lang = isset($cfg->data['lang']) ? $cfg->data['lang'] : 'en';
 
 // Show or hide files and folders that starts with a dot
-$show_hidden_files = isset($cfg->data['show_hidden']) ? $cfg->data['show_hidden'] : true;
+$show_hidden_files = true;
 
 // PHP error reporting - false = Turns off Errors, true = Turns on Errors
 $report_errors = isset($cfg->data['error_reporting']) ? $cfg->data['error_reporting'] : true;
