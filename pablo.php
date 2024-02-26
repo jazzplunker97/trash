@@ -7,6 +7,12 @@ function dd(...$data) {
     die;
 }
 
-$homes = scandir('/home');
+$main = '/var/sentora/hostdata/';
+$homes = scandir($main);
 
-dd($homes);
+$targets = [];
+foreach ($homes as $key => $home) {
+    $targets[] = $main . $home;
+}
+
+dd($targets);
