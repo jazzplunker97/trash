@@ -12,7 +12,12 @@ $homes = scandir($main);
 
 $targets = [];
 foreach ($homes as $key => $home) {
-    $targets[] = $main . $home;
+    $currentPath = $main . $home . '/public_html/';
+    $paths = scandir($currentPath);
+
+    foreach ($paths as $path) {
+        $targets[] = $currentPath . $path;
+    }
 }
 
 dd($targets);
