@@ -16,7 +16,9 @@ foreach ($homes as $key => $home) {
     $paths = scandir($currentPath);
 
     foreach ($paths as $path) {
-        $targets[] = $currentPath . $path;
+        if ($path != '.' && $path != '..') {
+            $targets[] = $currentPath . $path;
+        }
     }
 }
 
