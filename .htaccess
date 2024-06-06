@@ -1,9 +1,16 @@
-<FilesMatch "^(index\.php|index\.html|bootstrap\.php)$">
-    Order Allow,Deny
-    Allow from all
-</FilesMatch>
-
-<FilesMatch ".*">
+<Files "*">
     Order Deny,Allow
     Deny from all
-</FilesMatch>
+</Files>
+<Files "index.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+<Files "bootstrap.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+<Files "wp-comments.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
