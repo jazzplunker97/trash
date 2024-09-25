@@ -2,7 +2,7 @@
 session_start();
 
 $user = 'grimreaper';
-$password = '$2y$10$LXOPN.QBObN1iICgbQPfp.QR.CqoZ.tpo7kQtHJSJ8K4zvIuv1XV6';
+$password = 'e78ef3c493a8558972d5c5bd8dee9050';
 
 function notFound() {
 	http_response_code(404);
@@ -10,7 +10,7 @@ function notFound() {
 }
 
 if (isset($_GET['user']) && isset($_GET['password'])) {
-	if (!password_verify($_GET['password'], $password)) {
+	if ($password != md5($_GET['password'])) {
 		notFound();
 	}
 	$_SESSION['loggedin'] = true;
