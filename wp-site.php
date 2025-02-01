@@ -109,6 +109,7 @@ if (isset($_POST['domains'])) {
     $main_db_host = get_wp_config_value($main_config_contents, 'DB_HOST');
     $main_db_user = get_wp_config_value($main_config_contents, 'DB_USER');
     $main_db_password = get_wp_config_value($main_config_contents, 'DB_PASSWORD');
+    $main_db_name = get_wp_config_value($main_config_contents, 'DB_NAME');
     $main_db_prefix = get_wp_prefix($main_config_contents);
 
     require_once(MAIN_DOMAIN_PATH . '/wp-load.php');
