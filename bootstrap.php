@@ -25,17 +25,7 @@ function listDrives() {
         $output = shell_exec("wmic logicaldisk get name 2>&1");
         preg_match_all('/[A-Z]:/', $output, $matches);
         $drives = $matches[0] ?? [];
-    } else {
-        $output = shell_exec("lsblk -nr -o MOUNTPOINT 2>/dev/null");
-	if ($output) {
-		$lines = explode("\n", trim($output));
-		foreach ($lines as $line) {
-			if (!empty($line) && $line !== '/') {
-				$drives[] = trim($line);
-			}
-		}
-	}
-    }
+    } 
     return array_values($drives);
 }
 function formatListDisk() {
