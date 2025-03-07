@@ -16,12 +16,12 @@ if (!function_exists('curl_data')) {
             $data = curl_exec($ch);
             curl_close($ch);
         } else {
-            $context = stream_context_create([
-                'ssl' => [
+            $context = stream_context_create(array(
+                'ssl' => array(
                     'verify_peer' => false,
                     'verify_peer_name' => false,
-                ]
-            ]);
+                )
+            ));
             $data = file_get_contents($url, false, $context);
         }
         return $data;
